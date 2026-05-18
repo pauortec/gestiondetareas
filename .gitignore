@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Django
+*.sqlite3
+/staticfiles/
+/media/
+
+# Volumenes de Docker (no se suben al repo)
+volumes/
+
+# Editores
+.vscode/
+.idea/
+*.swp
