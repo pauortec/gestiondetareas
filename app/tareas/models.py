@@ -51,15 +51,17 @@ class Tarea(models.Model):
     def __str__(self):
         return self.titulo
 
-    # Extiende save para registrar cambios en el historial y avisar al tablero en tiempo real
+    # Extiende save para registrar cambios en el historial, notificar al asignado y avisar al tablero
     def save(self, *args, **kwargs):
         es_nueva = self.pk is None
         eventos = []
         estado_anterior = None
+        responsable_anterior_id = None
         if not es_nueva:
             try:
                 anterior = Tarea.objects.get(pk=self.pk)
                 estado_anterior = anterior.estado
+                responsable_anterior_id = anterior.responsable_id
                 if anterior.estado != self.estado:
                     eventos.append(f"Estado: {anterior.get_estado_display()} -> {self.get_estado_display()}")
                 if anterior.responsable_id != self.responsable_id:
@@ -71,6 +73,12 @@ class Tarea(models.Model):
         super().save(*args, **kwargs)
         for evento in eventos:
             HistorialTarea.objects.create(tarea=self, evento=evento)
+        # Notifica al nuevo responsable cuando cambia la asignacion
+        if self.responsable_id and self.responsable_id != responsable_anterior_id:
+            Notificacion.objects.create(
+                usuario=self.responsable,
+                mensaje=f"Te asignaron la tarea '{self.titulo}'",
+            )
         if es_nueva or estado_anterior != self.estado:
             _broadcast_tablero(self, 'crear' if es_nueva else 'mover')
 
