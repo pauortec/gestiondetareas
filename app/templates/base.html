@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Gestión de Tareas{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { min-height: 100vh; background: #0a0f1e; font-family: 'Segoe UI', sans-serif; color: #fff; }
+
+        .navbar {
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        .navbar h1 { font-size: 20px; font-weight: 700; }
+        .navbar h1 span { color: #38bdf8; }
+        .nav-links { display: flex; gap: 20px; flex: 1; }
+        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; }
+        .nav-links a:hover { color: #fff; }
+        .btn-logout {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.12); }
+
+        .container { padding: 40px 32px; }
+        .container h2 { font-size: 22px; margin-bottom: 20px; }
+
+        /* Tabla estilo lista de Odoo */
+        table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.03); border-radius: 10px; overflow: hidden; }
+        th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; }
+        th { color: rgba(255,255,255,0.6); font-weight: 600; background: rgba(255,255,255,0.04); }
+        tr:hover td { background: rgba(255,255,255,0.04); }
+        .vacio { color: rgba(255,255,255,0.5); padding: 24px 16px; }
+
+        {% block estilos %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Gesti<span>Task</span></h1>
+        <div class="nav-links">
+            <a href="{% url 'lista_proyectos' %}">Proyectos</a>
+        </div>
+        <a class="btn-logout" href="{% url 'logout' %}">Salir</a>
+    </nav>
+    <div class="container">
+        {% block contenido %}{% endblock %}
+    </div>
+</body>
+</html>

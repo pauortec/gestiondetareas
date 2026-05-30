@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Proyectos{% endblock %}
+
+{% block contenido %}
+<h2>Proyectos</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Propietario</th>
+            <th>Tareas</th>
+            <th>Creado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in proyectos %}
+        <tr>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.propietario.username }}</td>
+            <td>{{ p.num_tareas }}</td>
+            <td>{{ p.creado_en|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="vacio">No tenés proyectos todavía.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -5,6 +5,9 @@ from django.contrib import messages
 from django.core import validators
 from django import forms
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
+
+from .accesos import proyectos_de
 
 class RegistroForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
@@ -54,3 +57,10 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     return render(request, 'dashboard.html')
+
+
+# Vista lista de proyectos visibles para el usuario
+@login_required
+def lista_proyectos(request):
+    proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
+    return render(request, 'proyectos/lista.html', {'proyectos': proyectos})
