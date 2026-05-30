@@ -38,3 +38,23 @@ class TableroConsumer(AsyncJsonWebsocketConsumer):
         except Proyecto.DoesNotExist:
             return False
         return puede_ver_proyecto(user, proyecto)
+
+
+# Consumer personal de notificaciones: un grupo por usuario
+class NotificacionConsumer(AsyncJsonWebsocketConsumer):
+
+    async def connect(self):
+        user = self.scope.get('user')
+        if not user or not user.is_authenticated:
+            await self.close()
+            return
+        self.grupo = f'notif_{user.id}'
+        await self.channel_layer.group_add(self.grupo, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, code):
+        if hasattr(self, 'grupo'):
+            await self.channel_layer.group_discard(self.grupo, self.channel_name)
+
+    async def evento_notif(self, event):
+        await self.send_json(event['data'])

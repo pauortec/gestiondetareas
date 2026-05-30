@@ -75,10 +75,11 @@ class Tarea(models.Model):
             HistorialTarea.objects.create(tarea=self, evento=evento)
         # Notifica al nuevo responsable cuando cambia la asignacion
         if self.responsable_id and self.responsable_id != responsable_anterior_id:
-            Notificacion.objects.create(
+            notif = Notificacion.objects.create(
                 usuario=self.responsable,
                 mensaje=f"Te asignaron la tarea '{self.titulo}'",
             )
+            _broadcast_notificacion(notif)
         if es_nueva or estado_anterior != self.estado:
             _broadcast_tablero(self, 'crear' if es_nueva else 'mover')
 
@@ -98,6 +99,28 @@ def _broadcast_tablero(tarea, accion):
         async_to_sync(layer.group_send)(f'tablero_{tarea.proyecto_id}', {
             'type': 'evento_tablero',
             'data': {'accion': accion, 'tarea_id': tarea.pk, 'estado': tarea.estado},
+        })
+    except Exception:
+        pass
+
+
+# Empuja la notificacion al canal personal del usuario asignado
+def _broadcast_notificacion(notif):
+    try:
+        from asgiref.sync import async_to_sync
+        from channels.layers import get_channel_layer
+    except ImportError:
+        return
+    layer = get_channel_layer()
+    if not layer:
+        return
+    try:
+        async_to_sync(layer.group_send)(f'notif_{notif.usuario_id}', {
+            'type': 'evento_notif',
+            'data': {
+                'mensaje': notif.mensaje,
+                'creada_en': notif.creada_en.isoformat(),
+            },
         })
     except Exception:
         pass
