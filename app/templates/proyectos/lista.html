@@ -2,7 +2,10 @@
 {% block title %}Proyectos{% endblock %}
 
 {% block contenido %}
-<h2>Proyectos</h2>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="margin:0;">Proyectos</h2>
+    <a href="{% url 'kanban_proyectos' %}" style="color:rgba(255,255,255,0.6); font-size:13px; text-decoration:none;">Ver como kanban</a>
+</div>
 <table>
     <thead>
         <tr>

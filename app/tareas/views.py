@@ -76,6 +76,13 @@ def lista_proyectos(request):
     return render(request, 'proyectos/lista.html', {'proyectos': proyectos})
 
 
+# Misma data que la lista pero renderizada como tarjetas planas (sin columnas por estado)
+@login_required
+def kanban_proyectos(request):
+    proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
+    return render(request, 'proyectos/kanban.html', {'proyectos': proyectos})
+
+
 # Solo el propietario puede compartir su proyecto con otros usuarios
 @login_required
 def compartir_proyecto(request, pk):
