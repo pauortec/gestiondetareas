@@ -19,6 +19,10 @@
 .filtros .acciones { display: flex; gap: 6px; }
 .filtros button { padding: 8px 14px; background: #38bdf8; color: #0a0f1e; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
 .filtros .limpiar { padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff; border-radius: 6px; text-decoration: none; font-size: 13px; }
+.card { cursor: grab; }
+.card.arrastrando { opacity: 0.4; }
+.col.drop-target { background: rgba(56,189,248,0.10); border-color: #38bdf8; }
+.zona { min-height: 30px; }
 {% endblock %}
 
 {% block contenido %}
@@ -74,24 +78,71 @@
     </div>
 </form>
 
+<form id="csrf" style="display:none">{% csrf_token %}</form>
+
 <div class="tablero">
     {% for col in columnas %}
-    <div class="col">
+    <div class="col" data-estado="{{ col.codigo }}">
         <div class="col-titulo">
             <span>{{ col.label }}</span>
             <span class="conteo">{{ col.tareas|length }}</span>
         </div>
-        {% for t in col.tareas %}
-        <div class="card" data-tarea="{{ t.pk }}">
-            <div class="titulo"><a href="{% url 'detalle_tarea' t.pk %}" style="color:#fff; text-decoration:none;">{{ t.titulo }}</a></div>
-            <div class="meta">{{ t.proyecto.nombre }}{% if t.responsable %} · {{ t.responsable.username }}{% endif %}</div>
-            {% if t.fecha_limite %}<div class="meta">Vence: {{ t.fecha_limite|date:"d/m/Y" }}</div>{% endif %}
-            <span class="tag">{{ t.get_categoria_display }}</span>
+        <div class="zona">
+            {% for t in col.tareas %}
+            <div class="card" data-tarea="{{ t.pk }}" draggable="true">
+                <div class="titulo"><a href="{% url 'detalle_tarea' t.pk %}" style="color:#fff; text-decoration:none;">{{ t.titulo }}</a></div>
+                <div class="meta">{{ t.proyecto.nombre }}{% if t.responsable %} · {{ t.responsable.username }}{% endif %}</div>
+                {% if t.fecha_limite %}<div class="meta">Vence: {{ t.fecha_limite|date:"d/m/Y" }}</div>{% endif %}
+                <span class="tag">{{ t.get_categoria_display }}</span>
+            </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="col-vacia">— vacío —</div>
-        {% endfor %}
     </div>
     {% endfor %}
 </div>
+
+<script>
+// Arrastrar tarjetas entre columnas y persistir el orden en el servidor
+const csrf = document.querySelector('#csrf input[name=csrfmiddlewaretoken]').value;
+const moverUrl = "{% url 'mover_tarea' %}";
+
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', card.dataset.tarea);
+        card.classList.add('arrastrando');
+    });
+    card.addEventListener('dragend', () => card.classList.remove('arrastrando'));
+});
+
+document.querySelectorAll('.col').forEach(col => {
+    const zona = col.querySelector('.zona');
+    col.addEventListener('dragover', e => {
+        e.preventDefault();
+        col.classList.add('drop-target');
+    });
+    col.addEventListener('dragleave', e => {
+        if (!col.contains(e.relatedTarget)) col.classList.remove('drop-target');
+    });
+    col.addEventListener('drop', async e => {
+        e.preventDefault();
+        col.classList.remove('drop-target');
+        const tareaId = e.dataTransfer.getData('text/plain');
+        const card = document.querySelector(`.card[data-tarea="${tareaId}"]`);
+        if (!card) return;
+        zona.appendChild(card);
+        const estado = col.dataset.estado;
+        const orden = [...zona.querySelectorAll('.card')].map(c => parseInt(c.dataset.tarea));
+        try {
+            const r = await fetch(moverUrl, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+                body: JSON.stringify({tarea_id: parseInt(tareaId), estado, orden}),
+            });
+            if (!r.ok) location.reload();
+        } catch (err) {
+            location.reload();
+        }
+    });
+});
+</script>
 {% endblock %}
