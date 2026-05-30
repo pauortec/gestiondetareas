@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Proyecto, Tarea, ParteHoras, Notificacion
 
-# Register your models here.
+admin.site.register(Proyecto)
+admin.site.register(Tarea)
+admin.site.register(ParteHoras)
+admin.site.register(Notificacion)
