@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 
 from .accesos import proyectos_de, tareas_de, puede_ver_tarea, puede_ver_proyecto
-from .models import Tarea, Proyecto, ESTADOS
+from .models import Tarea, Proyecto, ESTADOS, CATEGORIAS
 
 # Codigos de estado validos
 ESTADOS_VALIDOS = {codigo for codigo, _ in ESTADOS}
@@ -110,6 +110,51 @@ def compartir_proyecto(request, pk):
 def lista_tareas(request):
     tareas = tareas_de(request.user).select_related('proyecto', 'responsable')
     return render(request, 'tareas/lista.html', {'tareas': tareas})
+
+
+# Tablero kanban: 4 columnas fijas, una por cada estado.
+# Acepta filtros por GET: q (texto en titulo), categoria, estado, responsable, fecha_desde, fecha_hasta.
+@login_required
+def kanban_tareas(request):
+    qs = tareas_de(request.user).select_related('proyecto', 'responsable').order_by('posicion')
+
+    filtros = {
+        'q': request.GET.get('q', '').strip(),
+        'categoria': request.GET.get('categoria', ''),
+        'estado': request.GET.get('estado', ''),
+        'responsable': request.GET.get('responsable', ''),
+        'fecha_desde': request.GET.get('fecha_desde', ''),
+        'fecha_hasta': request.GET.get('fecha_hasta', ''),
+    }
+
+    if filtros['q']:
+        qs = qs.filter(titulo__icontains=filtros['q'])
+    if filtros['categoria']:
+        qs = qs.filter(categoria=filtros['categoria'])
+    if filtros['estado']:
+        qs = qs.filter(estado=filtros['estado'])
+    if filtros['responsable'] == 'sin_asignar':
+        qs = qs.filter(responsable__isnull=True)
+    elif filtros['responsable']:
+        qs = qs.filter(responsable_id=filtros['responsable'])
+    if filtros['fecha_desde']:
+        qs = qs.filter(fecha_limite__gte=filtros['fecha_desde'])
+    if filtros['fecha_hasta']:
+        qs = qs.filter(fecha_limite__lte=filtros['fecha_hasta'])
+
+    columnas = [{'codigo': codigo, 'label': label, 'tareas': []} for codigo, label in ESTADOS]
+    indice = {c['codigo']: c for c in columnas}
+    for t in qs:
+        if t.estado in indice:
+            indice[t.estado]['tareas'].append(t)
+
+    return render(request, 'tareas/kanban.html', {
+        'columnas': columnas,
+        'usuarios': User.objects.order_by('username'),
+        'categorias': CATEGORIAS,
+        'estados': ESTADOS,
+        'filtros': filtros,
+    })
 
 
 # Cualquiera con acceso puede reasignar la tarea a otro usuario del sistema
