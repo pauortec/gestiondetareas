@@ -11,8 +11,10 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from .accesos import proyectos_de, tareas_de, puede_ver_tarea
-from .models import Tarea, ESTADOS
+from django.contrib.auth.models import User
+
+from .accesos import proyectos_de, tareas_de, puede_ver_tarea, puede_ver_proyecto
+from .models import Tarea, Proyecto, ESTADOS
 
 # Codigos de estado validos
 ESTADOS_VALIDOS = {codigo for codigo, _ in ESTADOS}
@@ -72,6 +74,28 @@ def dashboard(request):
 def lista_proyectos(request):
     proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
     return render(request, 'proyectos/lista.html', {'proyectos': proyectos})
+
+
+# Solo el propietario puede compartir su proyecto con otros usuarios
+@login_required
+def compartir_proyecto(request, pk):
+    proyecto = get_object_or_404(Proyecto, pk=pk)
+    if proyecto.propietario != request.user:
+        return redirect('lista_proyectos')
+
+    if request.method == 'POST':
+        ids = request.POST.getlist('colaboradores')
+        elegidos = User.objects.filter(pk__in=ids).exclude(pk=request.user.pk)
+        proyecto.colaboradores.set(elegidos)
+        return redirect('lista_proyectos')
+
+    candidatos = User.objects.exclude(pk=request.user.pk).order_by('username')
+    actuales = set(proyecto.colaboradores.values_list('pk', flat=True))
+    return render(request, 'proyectos/compartir.html', {
+        'proyecto': proyecto,
+        'candidatos': candidatos,
+        'actuales': actuales,
+    })
 
 
 # Vista lista de tareas accesibles para el usuario
