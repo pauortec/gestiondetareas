@@ -19,13 +19,14 @@ El proyecto Django todavia no esta creado, eso lo arma el siguiente paso del equ
 
 ## Como funciona Docker en este proyecto
 
-Tres contenedores se levantan juntos con `docker-compose`:
+Cuatro contenedores se levantan juntos con `docker-compose`:
 
-- **web**: Python 3.12 + Django. Aca corre el servidor de desarrollo.
+- **web**: Python 3.12 + Django + Channels (ASGI). Aca corre el servidor.
 - **db**: PostgreSQL 16. La base del proyecto.
+- **redis**: Redis 7. Channel layer para los websockets del tablero.
 - **pgadmin**: interfaz web para mirar y administrar la base.
 
-Ningun dev tiene que instalar Python, Django ni Postgres en su PC. Solo Docker.
+Ningun dev tiene que instalar Python, Django, Postgres ni Redis en su PC. Solo Docker.
 
 Cada PC tiene su **propia base local** (los datos viven en `volumes/pg-data/`, que esta en el `.gitignore`). Lo que se comparte por git son las **migraciones de Django**, que son la receta para recrear el esquema de la base en cualquier PC.
 
@@ -69,3 +70,17 @@ docker-compose exec web python app/manage.py shell
 docker-compose build
 docker-compose up -d
 ```
+
+---
+
+## Modulo de permisos (`app/tareas/accesos.py`)
+
+Toda la logica de "quien puede ver que" vive ahi. Las vistas y el consumer
+de websocket la usan para decidir si el usuario tiene acceso a un proyecto
+o tarea, sin duplicar reglas.
+
+- `proyectos_de(usuario)`: queryset de proyectos propios o compartidos.
+- `tareas_de(usuario)`: queryset de tareas accesibles, incluye las asignadas.
+- `puede_ver_proyecto(usuario, proyecto)` y `puede_ver_tarea(usuario, tarea)`:
+  chequeos puntuales para objetos ya cargados (no disparan otro query si
+  los related ya estan en memoria).
