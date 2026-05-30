@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect
+import json
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -6,8 +8,14 @@ from django.core import validators
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
-from .accesos import proyectos_de, tareas_de
+from .accesos import proyectos_de, tareas_de, puede_ver_tarea
+from .models import Tarea, ESTADOS
+
+# Codigos de estado validos
+ESTADOS_VALIDOS = {codigo for codigo, _ in ESTADOS}
 
 class RegistroForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
@@ -71,3 +79,27 @@ def lista_proyectos(request):
 def lista_tareas(request):
     tareas = tareas_de(request.user).select_related('proyecto', 'responsable')
     return render(request, 'tareas/lista.html', {'tareas': tareas})
+
+
+# Mueve una tarjeta a otro estado y guarda el orden de la columna destino.
+# Recibe JSON: {tarea_id, estado, orden: [ids en el orden final de la columna]}
+@login_required
+@require_POST
+def mover_tarea(request):
+    datos = json.loads(request.body)
+    tarea = get_object_or_404(Tarea, pk=datos.get('tarea_id'))
+    if not puede_ver_tarea(request.user, tarea):
+        return JsonResponse({'ok': False, 'error': 'sin permiso'}, status=403)
+
+    estado = datos.get('estado')
+    if estado not in ESTADOS_VALIDOS:
+        return JsonResponse({'ok': False, 'error': 'estado invalido'}, status=400)
+
+    tarea.estado = estado
+    tarea.save(update_fields=['estado'])
+
+    # Reescribe la posicion de cada tarjeta segun el orden recibido
+    for posicion, tid in enumerate(datos.get('orden', [])):
+        Tarea.objects.filter(pk=tid).update(posicion=posicion)
+
+    return JsonResponse({'ok': True})
