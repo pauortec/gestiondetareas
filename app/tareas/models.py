@@ -51,12 +51,15 @@ class Tarea(models.Model):
     def __str__(self):
         return self.titulo
 
-    # Extiende save para registrar cambios de estado y de responsable en el historial
+    # Extiende save para registrar cambios en el historial y avisar al tablero en tiempo real
     def save(self, *args, **kwargs):
+        es_nueva = self.pk is None
         eventos = []
-        if self.pk:
+        estado_anterior = None
+        if not es_nueva:
             try:
                 anterior = Tarea.objects.get(pk=self.pk)
+                estado_anterior = anterior.estado
                 if anterior.estado != self.estado:
                     eventos.append(f"Estado: {anterior.get_estado_display()} -> {self.get_estado_display()}")
                 if anterior.responsable_id != self.responsable_id:
@@ -68,6 +71,28 @@ class Tarea(models.Model):
         super().save(*args, **kwargs)
         for evento in eventos:
             HistorialTarea.objects.create(tarea=self, evento=evento)
+        if es_nueva or estado_anterior != self.estado:
+            _broadcast_tablero(self, 'crear' if es_nueva else 'mover')
+
+
+# Avisa a los clientes conectados al tablero del proyecto que hubo un cambio.
+# Falla en silencio si Channels no esta levantado (tests o local sin redis).
+def _broadcast_tablero(tarea, accion):
+    try:
+        from asgiref.sync import async_to_sync
+        from channels.layers import get_channel_layer
+    except ImportError:
+        return
+    layer = get_channel_layer()
+    if not layer:
+        return
+    try:
+        async_to_sync(layer.group_send)(f'tablero_{tarea.proyecto_id}', {
+            'type': 'evento_tablero',
+            'data': {'accion': accion, 'tarea_id': tarea.pk, 'estado': tarea.estado},
+        })
+    except Exception:
+        pass
 
 
 class ParteHoras(models.Model):

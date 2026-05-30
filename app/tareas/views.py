@@ -126,6 +126,7 @@ def kanban_tareas(request):
         'responsable': request.GET.get('responsable', ''),
         'fecha_desde': request.GET.get('fecha_desde', ''),
         'fecha_hasta': request.GET.get('fecha_hasta', ''),
+        'proyecto': request.GET.get('proyecto', ''),
     }
 
     if filtros['q']:
@@ -142,6 +143,8 @@ def kanban_tareas(request):
         qs = qs.filter(fecha_limite__gte=filtros['fecha_desde'])
     if filtros['fecha_hasta']:
         qs = qs.filter(fecha_limite__lte=filtros['fecha_hasta'])
+    if filtros['proyecto']:
+        qs = qs.filter(proyecto_id=filtros['proyecto'])
 
     columnas = [{'codigo': codigo, 'label': label, 'tareas': []} for codigo, label in ESTADOS]
     indice = {c['codigo']: c for c in columnas}
@@ -149,12 +152,20 @@ def kanban_tareas(request):
         if t.estado in indice:
             indice[t.estado]['tareas'].append(t)
 
+    # Cuando se filtra por un proyecto, la vista puede suscribirse al WS de ese tablero
+    try:
+        proyecto_actual_id = int(filtros['proyecto']) if filtros['proyecto'] else None
+    except ValueError:
+        proyecto_actual_id = None
+
     return render(request, 'tareas/kanban.html', {
         'columnas': columnas,
         'usuarios': User.objects.order_by('username'),
         'categorias': CATEGORIAS,
         'estados': ESTADOS,
         'filtros': filtros,
+        'proyectos_disponibles': proyectos_de(request.user),
+        'proyecto_actual_id': proyecto_actual_id,
     })
 
 
