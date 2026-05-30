@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 
 from .accesos import proyectos_de, tareas_de, puede_ver_tarea, puede_ver_proyecto
 from .models import Tarea, Proyecto, ESTADOS, CATEGORIAS
+from .forms import TareaForm, PartesHorasFormSet
 
 # Codigos de estado validos
 ESTADOS_VALIDOS = {codigo for codigo, _ in ESTADOS}
@@ -154,6 +155,32 @@ def kanban_tareas(request):
         'categorias': CATEGORIAS,
         'estados': ESTADOS,
         'filtros': filtros,
+    })
+
+
+# Detalle de la tarea: formulario principal + pestana Parte de horas + chatter de historial
+@login_required
+def detalle_tarea(request, pk):
+    tarea = get_object_or_404(Tarea, pk=pk)
+    if not puede_ver_tarea(request.user, tarea):
+        return redirect('lista_tareas')
+
+    if request.method == 'POST':
+        form = TareaForm(request.POST, instance=tarea)
+        formset = PartesHorasFormSet(request.POST, instance=tarea)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('detalle_tarea', pk=tarea.pk)
+    else:
+        form = TareaForm(instance=tarea)
+        formset = PartesHorasFormSet(instance=tarea)
+
+    return render(request, 'tareas/detalle.html', {
+        'tarea': tarea,
+        'form': form,
+        'formset': formset,
+        'historial': tarea.historial.all()[:50],
     })
 
 

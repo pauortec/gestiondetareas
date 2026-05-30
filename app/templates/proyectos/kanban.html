@@ -83,7 +83,7 @@
         </div>
         {% for t in col.tareas %}
         <div class="card" data-tarea="{{ t.pk }}">
-            <div class="titulo">{{ t.titulo }}</div>
+            <div class="titulo"><a href="{% url 'detalle_tarea' t.pk %}" style="color:#fff; text-decoration:none;">{{ t.titulo }}</a></div>
             <div class="meta">{{ t.proyecto.nombre }}{% if t.responsable %} · {{ t.responsable.username }}{% endif %}</div>
             {% if t.fecha_limite %}<div class="meta">Vence: {{ t.fecha_limite|date:"d/m/Y" }}</div>{% endif %}
             <span class="tag">{{ t.get_categoria_display }}</span>

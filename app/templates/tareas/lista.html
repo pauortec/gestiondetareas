@@ -2,7 +2,10 @@
 {% block title %}Tareas{% endblock %}
 
 {% block contenido %}
-<h2>Tareas</h2>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="margin:0;">Tareas</h2>
+    <a href="{% url 'kanban_tareas' %}" style="color:rgba(255,255,255,0.6); font-size:13px; text-decoration:none;">Ver como kanban</a>
+</div>
 <table>
     <thead>
         <tr>
@@ -18,7 +21,7 @@
     <tbody>
         {% for t in tareas %}
         <tr>
-            <td>{{ t.titulo }}</td>
+            <td><a href="{% url 'detalle_tarea' t.pk %}" style="color:#fff; text-decoration:none;">{{ t.titulo }}</a></td>
             <td>{{ t.proyecto.nombre }}</td>
             <td>{{ t.get_estado_display }}</td>
             <td>{{ t.get_categoria_display }}</td>

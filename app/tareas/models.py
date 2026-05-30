@@ -51,6 +51,24 @@ class Tarea(models.Model):
     def __str__(self):
         return self.titulo
 
+    # Extiende save para registrar cambios de estado y de responsable en el historial
+    def save(self, *args, **kwargs):
+        eventos = []
+        if self.pk:
+            try:
+                anterior = Tarea.objects.get(pk=self.pk)
+                if anterior.estado != self.estado:
+                    eventos.append(f"Estado: {anterior.get_estado_display()} -> {self.get_estado_display()}")
+                if anterior.responsable_id != self.responsable_id:
+                    a = anterior.responsable.username if anterior.responsable else '(sin asignar)'
+                    n = self.responsable.username if self.responsable else '(sin asignar)'
+                    eventos.append(f"Responsable: {a} -> {n}")
+            except Tarea.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+        for evento in eventos:
+            HistorialTarea.objects.create(tarea=self, evento=evento)
+
 
 class ParteHoras(models.Model):
     tarea = models.ForeignKey(Tarea, on_delete=models.CASCADE, related_name='partes_horas')
@@ -66,6 +84,18 @@ class ParteHoras(models.Model):
 
     def __str__(self):
         return f"{self.tarea} - {self.horas}h"
+
+
+class HistorialTarea(models.Model):
+    tarea = models.ForeignKey(Tarea, on_delete=models.CASCADE, related_name='historial')
+    evento = models.CharField(max_length=200)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-creado_en']
+
+    def __str__(self):
+        return f"{self.tarea}: {self.evento}"
 
 
 class Notificacion(models.Model):
