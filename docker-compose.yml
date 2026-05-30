@@ -17,9 +17,13 @@ services:
       DB_PASSWORD: gestion_pass
       DB_HOST: db
       DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   # Base de datos PostgreSQL
   db:
@@ -38,6 +42,14 @@ services:
       test: ["CMD-SHELL", "pg_isready -U gestion_user -d gestion_tareas"]
       interval: 5s
       retries: 5
+
+  # Redis como backend del channel layer para WebSockets
+  redis:
+    image: redis:7
+    container_name: gestion_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
 
   # pgAdmin para administrar la base desde el navegador (http://localhost:5050)
   pgadmin:
