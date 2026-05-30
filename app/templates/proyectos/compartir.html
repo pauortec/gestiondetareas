@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Compartir {{ proyecto.nombre }}{% endblock %}
+
+{% block estilos %}<style>
+.form-box { background: rgba(255,255,255,0.04); padding: 24px; border-radius: 10px; max-width: 600px; }
+.form-box label { display: block; padding: 8px 0; font-size: 14px; cursor: pointer; }
+.form-box input[type=checkbox] { margin-right: 10px; }
+.btn { padding: 10px 18px; background: #38bdf8; color: #0a0f1e; border: 0; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-cancel { background: rgba(255,255,255,0.07); color: #fff; margin-left: 8px; text-decoration: none; padding: 10px 18px; border-radius: 8px; }
+</style>{% endblock %}
+
+{% block contenido %}
+<h2>Compartir "{{ proyecto.nombre }}"</h2>
+<p style="color:rgba(255,255,255,0.5); margin-bottom:20px;">Marcá los usuarios que pueden ver y gestionar este proyecto.</p>
+
+<form method="post" class="form-box">
+    {% csrf_token %}
+    {% for u in candidatos %}
+    <label>
+        <input type="checkbox" name="colaboradores" value="{{ u.pk }}" {% if u.pk in actuales %}checked{% endif %}>
+        {{ u.username }}
+    </label>
+    {% empty %}
+    <p class="vacio">No hay otros usuarios en el sistema.</p>
+    {% endfor %}
+    <div style="margin-top:20px;">
+        <button type="submit" class="btn">Guardar</button>
+        <a class="btn-cancel" href="{% url 'lista_proyectos' %}">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

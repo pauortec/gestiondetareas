@@ -2,7 +2,10 @@
 {% block title %}Proyectos{% endblock %}
 
 {% block contenido %}
-<h2>Proyectos</h2>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="margin:0;">Proyectos</h2>
+    <a href="{% url 'kanban_proyectos' %}" style="color:rgba(255,255,255,0.6); font-size:13px; text-decoration:none;">Ver como kanban</a>
+</div>
 <table>
     <thead>
         <tr>
@@ -10,6 +13,7 @@
             <th>Propietario</th>
             <th>Tareas</th>
             <th>Creado</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -19,9 +23,14 @@
             <td>{{ p.propietario.username }}</td>
             <td>{{ p.num_tareas }}</td>
             <td>{{ p.creado_en|date:"d/m/Y" }}</td>
+            <td>
+                {% if p.propietario == request.user %}
+                <a href="{% url 'compartir_proyecto' p.pk %}" style="color:#38bdf8;">Compartir</a>
+                {% endif %}
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" class="vacio">No tenés proyectos todavía.</td></tr>
+        <tr><td colspan="5" class="vacio">No tenés proyectos todavía.</td></tr>
         {% endfor %}
     </tbody>
 </table>

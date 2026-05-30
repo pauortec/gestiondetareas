@@ -1,9 +1,11 @@
 from django.urls import path
 
-from .consumers import TableroConsumer
+from .consumers import TableroConsumer, NotificacionConsumer
 
 
-# Un websocket por proyecto: ws/tablero/<proyecto_id>/
 websocket_urlpatterns = [
+    # Un canal por proyecto: cambios del tablero
     path('ws/tablero/<int:proyecto_id>/', TableroConsumer.as_asgi()),
+    # Un canal personal por usuario: notificaciones
+    path('ws/notificaciones/', NotificacionConsumer.as_asgi()),
 ]

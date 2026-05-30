@@ -2,7 +2,10 @@
 {% block title %}Tareas{% endblock %}
 
 {% block contenido %}
-<h2>Tareas</h2>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="margin:0;">Tareas</h2>
+    <a href="{% url 'kanban_tareas' %}" style="color:rgba(255,255,255,0.6); font-size:13px; text-decoration:none;">Ver como kanban</a>
+</div>
 <table>
     <thead>
         <tr>
@@ -12,20 +15,22 @@
             <th>Categoría</th>
             <th>Responsable</th>
             <th>Fecha límite</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
         {% for t in tareas %}
         <tr>
-            <td>{{ t.titulo }}</td>
+            <td><a href="{% url 'detalle_tarea' t.pk %}" style="color:#fff; text-decoration:none;">{{ t.titulo }}</a></td>
             <td>{{ t.proyecto.nombre }}</td>
             <td>{{ t.get_estado_display }}</td>
             <td>{{ t.get_categoria_display }}</td>
             <td>{{ t.responsable.username|default:"-" }}</td>
             <td>{{ t.fecha_limite|date:"d/m/Y"|default:"-" }}</td>
+            <td><a href="{% url 'asignar_tarea' t.pk %}" style="color:#38bdf8;">Asignar</a></td>
         </tr>
         {% empty %}
-        <tr><td colspan="6" class="vacio">No hay tareas para mostrar.</td></tr>
+        <tr><td colspan="7" class="vacio">No hay tareas para mostrar.</td></tr>
         {% endfor %}
     </tbody>
 </table>

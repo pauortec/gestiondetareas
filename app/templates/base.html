@@ -41,6 +41,19 @@
         tr:hover td { background: rgba(255,255,255,0.04); }
         .vacio { color: rgba(255,255,255,0.5); padding: 24px 16px; }
 
+        /* Toast de notificaciones en vivo */
+        .toast-notif {
+            position: fixed; top: 80px; right: 24px;
+            background: #38bdf8; color: #0a0f1e;
+            padding: 12px 18px; border-radius: 8px;
+            font-size: 13px; font-weight: 600;
+            opacity: 0; transform: translateX(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000; max-width: 320px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+        }
+        .toast-notif.visible { opacity: 1; transform: translateX(0); }
+
         {% block estilos %}{% endblock %}
     </style>
 </head>
@@ -56,5 +69,30 @@
     <div class="container">
         {% block contenido %}{% endblock %}
     </div>
+
+    {% if user.is_authenticated %}
+    <script>
+    // Canal personal de notificaciones: escucha eventos del servidor y muestra un toast
+    (function () {
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        const ws = new WebSocket(`${proto}://${location.host}/ws/notificaciones/`);
+        ws.onmessage = function (e) {
+            const msg = JSON.parse(e.data);
+            mostrarToast(msg.mensaje || 'Tenés una notificación nueva');
+        };
+        function mostrarToast(texto) {
+            const div = document.createElement('div');
+            div.className = 'toast-notif';
+            div.textContent = texto;
+            document.body.appendChild(div);
+            setTimeout(() => div.classList.add('visible'), 10);
+            setTimeout(() => {
+                div.classList.remove('visible');
+                setTimeout(() => div.remove(), 300);
+            }, 5000);
+        }
+    })();
+    </script>
+    {% endif %}
 </body>
 </html>
