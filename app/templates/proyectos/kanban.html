@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Proyectos (Kanban){% endblock %}
 
-{% block estilos %}
+{% block estilos %}<style>
 .toggle { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; }
 .toggle:hover { color: #fff; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
@@ -9,7 +9,7 @@
 .card h3 { font-size: 16px; margin-bottom: 8px; }
 .card .meta { color: rgba(255,255,255,0.5); font-size: 12px; }
 .card .num { color: #38bdf8; font-weight: 700; font-size: 22px; margin-top: 8px; }
-{% endblock %}
+</style>{% endblock %}
 
 {% block contenido %}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
