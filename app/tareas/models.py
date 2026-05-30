@@ -52,6 +52,22 @@ class Tarea(models.Model):
         return self.titulo
 
 
+class ParteHoras(models.Model):
+    tarea = models.ForeignKey(Tarea, on_delete=models.CASCADE, related_name='partes_horas')
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='partes_horas')
+    fecha = models.DateField()
+    descripcion = models.CharField(max_length=200, blank=True)
+    horas = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    # Misma clasificacion que la tarea
+    categoria = models.CharField(max_length=20, choices=CATEGORIAS, default='tecnico')
+
+    class Meta:
+        ordering = ['fecha', 'id']
+
+    def __str__(self):
+        return f"{self.tarea} - {self.horas}h"
+
+
 class Notificacion(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notificaciones')
     mensaje = models.TextField()
