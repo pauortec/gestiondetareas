@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Tareas{% endblock %}
+
+{% block contenido %}
+<h2>Tareas</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Proyecto</th>
+            <th>Estado</th>
+            <th>Categoría</th>
+            <th>Responsable</th>
+            <th>Fecha límite</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in tareas %}
+        <tr>
+            <td>{{ t.titulo }}</td>
+            <td>{{ t.proyecto.nombre }}</td>
+            <td>{{ t.get_estado_display }}</td>
+            <td>{{ t.get_categoria_display }}</td>
+            <td>{{ t.responsable.username|default:"-" }}</td>
+            <td>{{ t.fecha_limite|date:"d/m/Y"|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="vacio">No hay tareas para mostrar.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

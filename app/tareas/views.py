@@ -7,7 +7,7 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 
-from .accesos import proyectos_de
+from .accesos import proyectos_de, tareas_de
 
 class RegistroForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
@@ -64,3 +64,10 @@ def dashboard(request):
 def lista_proyectos(request):
     proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
     return render(request, 'proyectos/lista.html', {'proyectos': proyectos})
+
+
+# Vista lista de tareas accesibles para el usuario
+@login_required
+def lista_tareas(request):
+    tareas = tareas_de(request.user).select_related('proyecto', 'responsable')
+    return render(request, 'tareas/lista.html', {'tareas': tareas})
