@@ -12,6 +12,7 @@
             <th>Categoría</th>
             <th>Responsable</th>
             <th>Fecha límite</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -23,9 +24,10 @@
             <td>{{ t.get_categoria_display }}</td>
             <td>{{ t.responsable.username|default:"-" }}</td>
             <td>{{ t.fecha_limite|date:"d/m/Y"|default:"-" }}</td>
+            <td><a href="{% url 'asignar_tarea' t.pk %}" style="color:#38bdf8;">Asignar</a></td>
         </tr>
         {% empty %}
-        <tr><td colspan="6" class="vacio">No hay tareas para mostrar.</td></tr>
+        <tr><td colspan="7" class="vacio">No hay tareas para mostrar.</td></tr>
         {% endfor %}
     </tbody>
 </table>

@@ -10,4 +10,5 @@ urlpatterns = [
     path('proyectos/<int:pk>/compartir/', views.compartir_proyecto, name='compartir_proyecto'),
     path('tareas/', views.lista_tareas, name='lista_tareas'),
     path('tareas/mover/', views.mover_tarea, name='mover_tarea'),
+    path('tareas/<int:pk>/asignar/', views.asignar_tarea, name='asignar_tarea'),
 ]

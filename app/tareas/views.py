@@ -105,6 +105,23 @@ def lista_tareas(request):
     return render(request, 'tareas/lista.html', {'tareas': tareas})
 
 
+# Cualquiera con acceso puede reasignar la tarea a otro usuario del sistema
+@login_required
+def asignar_tarea(request, pk):
+    tarea = get_object_or_404(Tarea, pk=pk)
+    if not puede_ver_tarea(request.user, tarea):
+        return redirect('lista_tareas')
+
+    if request.method == 'POST':
+        uid = request.POST.get('responsable') or None
+        tarea.responsable = User.objects.filter(pk=uid).first() if uid else None
+        tarea.save(update_fields=['responsable'])
+        return redirect('lista_tareas')
+
+    candidatos = User.objects.order_by('username')
+    return render(request, 'tareas/asignar.html', {'tarea': tarea, 'candidatos': candidatos})
+
+
 # Mueve una tarjeta a otro estado y guarda el orden de la columna destino.
 # Recibe JSON: {tarea_id, estado, orden: [ids en el orden final de la columna]}
 @login_required
