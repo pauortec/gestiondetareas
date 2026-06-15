@@ -1,120 +1,124 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard - GestiTask</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { min-height: 100vh; background: #0a0f1e; font-family: 'Segoe UI', sans-serif; color: #fff; }
+{% extends "base.html" %}
+{% block title %}Dashboard - GestiTask{% endblock %}
 
-        .navbar {
-            background: rgba(255,255,255,0.05);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 16px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+{% block estilos %}
+<style>
+.boards-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+.boards-header h2 { font-size: 22px; }
 
-        .navbar h1 { font-size: 20px; font-weight: 700; }
-        .navbar h1 span { color: #38bdf8; }
+.btn-new {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #1a6fd4, #38bdf8);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    display: inline-block;
+}
+.btn-new:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        .navbar .user-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            color: rgba(255,255,255,0.7);
-            font-size: 14px;
-        }
+.boards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
 
-        .btn-logout {
-            padding: 8px 16px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 13px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
+.board-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 20px;
+    color: #fff;
+    transition: background 0.2s, transform 0.2s;
+    display: block;
+    position: relative;
+}
+.board-card:hover { background: rgba(255,255,255,0.09); transform: translateY(-2px); }
+.board-card a.card-link {
+    text-decoration: none;
+    color: #fff;
+    display: block;
+}
+.board-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.board-card .meta { font-size: 12px; color: rgba(255,255,255,0.45); }
+.badge-owner {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: rgba(56,189,248,0.15);
+    color: #38bdf8;
+}
+.badge-shared { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
 
-        .btn-logout:hover { background: rgba(255,255,255,0.12); }
+.card-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+.btn-delete-card {
+    font-size: 11px;
+    color: rgba(239,68,68,0.6);
+    text-decoration: none;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(239,68,68,0.2);
+    transition: all 0.2s;
+}
+.btn-delete-card:hover { color: #ef4444; border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.08); }
 
-        .container {
-            padding: 40px 32px;
-        }
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: rgba(255,255,255,0.3);
+    font-size: 15px;
+}
+</style>
+{% endblock %}
 
-        .welcome {
-            margin-bottom: 32px;
-        }
-
-        .welcome h2 {
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .welcome p {
-            color: rgba(255,255,255,0.5);
-            margin-top: 6px;
-            font-size: 15px;
-        }
-
-        .boards-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .boards-header h3 { font-size: 16px; font-weight: 500; }
-
-        .btn-new {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #1a6fd4, #38bdf8);
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-
-        .btn-new:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            color: rgba(255,255,255,0.3);
-        }
-
-        .empty-state p { font-size: 16px; margin-top: 12px; }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <h1>Gesti<span>Task</span></h1>
-        <div class="user-info">
-            <span>Hola, {{ request.user.username }}</span>
-            <a href="{% url 'logout' %}" class="btn-logout">Cerrar sesión</a>
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="welcome">
-            <h2>Mis tableros</h2>
-            <p>Organizá tu trabajo en tableros, listas y tarjetas.</p>
-        </div>
-
-        <div class="boards-header">
-            <h3>Tableros recientes</h3>
-            <button class="btn-new">+ Nuevo tablero</button>
-        </div>
-
-        <div class="empty-state">
-            <p>No tenés tableros todavía. ¡Creá el primero!</p>
-        </div>
+{% block contenido %}
+<div class="boards-header">
+    <h2>Mis tableros</h2>
+    <div style="display:flex; gap:10px;">
+        <a href="{% url 'crear_proyecto' %}" class="btn-new" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);">+ Nuevo proyecto</a>
+        <a href="{% url 'crear_tarea' %}" class="btn-new">+ Nueva tarea</a>
     </div>
-</body>
-</html>
+</div>
+
+{% if proyectos %}
+<div class="boards-grid">
+    {% for p in proyectos %}
+    <div class="board-card">
+        <a href="{% url 'kanban_tareas' %}?proyecto={{ p.pk }}" class="card-link">
+            <h3>{{ p.nombre }}</h3>
+            <div class="meta">{{ p.num_tareas }} tarea{{ p.num_tareas|pluralize }}</div>
+            {% if p.propietario == request.user %}
+                <span class="badge-owner">Propietario</span>
+            {% else %}
+                <span class="badge-owner badge-shared">Compartido</span>
+            {% endif %}
+        </a>
+        {% if p.propietario == request.user %}
+        <div class="card-footer">
+            <a href="{% url 'eliminar_proyecto' p.pk %}" class="btn-delete-card">Eliminar</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    No tenés tableros todavía. ¡Creá el primero!
+</div>
+{% endif %}
+{% endblock %}

@@ -2,97 +2,207 @@
 {% block title %}{{ tarea.titulo }}{% endblock %}
 
 {% block estilos %}<style>
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); margin: 18px 0 16px; }
-.tabs label { padding: 10px 18px; cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.6); border-bottom: 2px solid transparent; }
-.tabs input[type=radio] { display: none; }
-.tabs input[type=radio]:checked + label { color: #fff; border-bottom-color: #38bdf8; }
+.status-bar {
+    display: flex;
+    gap: 0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.status-bar a {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.status-bar a:last-child { border-right: none; }
+.status-bar a.active { background: #38bdf8; color: #0a0f1e; }
+.status-bar a:hover:not(.active) { background: rgba(255,255,255,0.07); color: #fff; }
+.detalle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.detalle-titulo { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.detalle-proyecto { font-size: 13px; color: rgba(255,255,255,0.45); }
+.form-actions { display: flex; gap: 10px; margin-bottom: 24px; margin-top: 16px; align-items: center; }
+.btn-save {
+    padding: 9px 24px;
+    background: linear-gradient(135deg, #1a6fd4, #38bdf8);
+    border: none; border-radius: 8px; color: #fff;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.btn-save:hover { opacity: 0.88; }
+.btn-back {
+    padding: 9px 18px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; color: rgba(255,255,255,0.65);
+    font-size: 14px; text-decoration: none;
+}
+.btn-delete {
+    padding: 9px 18px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px; color: #ef4444;
+    font-size: 14px; text-decoration: none;
+    margin-left: auto;
+}
+.detalle-body { display: grid; grid-template-columns: 1fr 280px; gap: 24px; margin-bottom: 32px; }
+.card-section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 20px; margin-bottom: 16px;
+}
+.card-section h4 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: rgba(255,255,255,0.35); margin-bottom: 16px;
+}
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+    display: block; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.4); margin-bottom: 6px;
+}
+.field input[type=text], .field input[type=date], .field select, .field textarea {
+    width: 100%; padding: 8px 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px; color: #fff; font-size: 13px;
+    font-family: inherit; transition: border-color 0.2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #38bdf8; }
+.field select option { background: #1a2035; }
+.field textarea { resize: vertical; min-height: 100px; }
+.tabs-bottom {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; gap: 4px; margin-bottom: 20px;
+}
+.tabs-bottom input[type=radio] { display: none; }
+.tabs-bottom label {
+    padding: 10px 18px; cursor: pointer; font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tabs-bottom input[type=radio]:checked + label { color: #fff; border-bottom-color: #38bdf8; }
 .panel { display: none; }
-#t1:checked ~ #panel-form, #t2:checked ~ #panel-horas, #t3:checked ~ #panel-historial { display: block; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; max-width: 800px; }
-.form-grid .full { grid-column: 1 / -1; }
-.form-grid label { display: block; font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
-.form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 8px 10px; background: #0a0f1e; color: #fff; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; font-size: 13px; font-family: inherit; }
-.btn { padding: 10px 18px; background: #38bdf8; color: #0a0f1e; border: 0; border-radius: 8px; cursor: pointer; font-weight: 600; }
-.btn-cancel { background: rgba(255,255,255,0.07); color: #fff; margin-left: 8px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; }
-.tabla-horas { width: 100%; border-collapse: collapse; margin-top: 8px; }
-.tabla-horas th, .tabla-horas td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: left; font-size: 13px; }
-.tabla-horas th { color: rgba(255,255,255,0.5); font-weight: 600; }
-.tabla-horas input, .tabla-horas select { width: 100%; padding: 6px 8px; background: #0a0f1e; color: #fff; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; font-size: 12px; }
-.historial-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
-.historial-item .fecha { color: rgba(255,255,255,0.4); font-size: 11px; margin-left: 8px; }
+#t2:checked ~ #panel-horas { display: block; }
+#t3:checked ~ #panel-historial { display: block; }
+.tabla-horas { width: 100%; border-collapse: collapse; }
+.tabla-horas th, .tabla-horas td {
+    padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    text-align: left; font-size: 13px;
+}
+.tabla-horas th { color: rgba(255,255,255,0.45); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+.tabla-horas input, .tabla-horas select {
+    width: 100%; padding: 6px 8px;
+    background: rgba(255,255,255,0.06); color: #fff;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 12px;
+}
+.historial-item {
+    display: flex; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px;
+}
+.historial-item .fecha { color: rgba(255,255,255,0.35); font-size: 11px; }
+.vacio { color: rgba(255,255,255,0.35); font-size: 13px; padding: 16px 0; }
+@media (max-width: 768px) { .detalle-body { grid-template-columns: 1fr; } }
 </style>{% endblock %}
 
 {% block contenido %}
-<div style="display:flex; justify-content:space-between; align-items:center;">
-    <h2 style="margin:0;">{{ tarea.titulo }}</h2>
-    <span style="color:rgba(255,255,255,0.5); font-size:13px;">{{ tarea.proyecto.nombre }}</span>
+<form method="post">
+{% csrf_token %}
+
+<div class="detalle-header">
+    <div>
+        <div class="detalle-titulo">{{ tarea.titulo }}</div>
+        <div class="detalle-proyecto">{{ tarea.proyecto.nombre }}</div>
+    </div>
+    <div class="status-bar">
+        <a href="?set_estado=relevamiento" class="{% if tarea.estado == 'relevamiento' %}active{% endif %}">Relevamiento</a>
+        <a href="?set_estado=analisis" class="{% if tarea.estado == 'analisis' %}active{% endif %}">Análisis y Dev</a>
+        <a href="?set_estado=test" class="{% if tarea.estado == 'test' %}active{% endif %}">Test</a>
+        <a href="?set_estado=terminado" class="{% if tarea.estado == 'terminado' %}active{% endif %}">Terminado</a>
+    </div>
 </div>
 
-<form method="post">
-    {% csrf_token %}
-    <div class="tabs">
-        <input type="radio" name="tab" id="t1" checked>
-        <label for="t1">Formulario</label>
-        <input type="radio" name="tab" id="t2">
-        <label for="t2">Parte de horas</label>
-        <input type="radio" name="tab" id="t3">
-        <label for="t3">Historial</label>
+<div class="form-actions">
+    <button type="submit" class="btn-save">Guardar</button>
+    <a href="{% url 'kanban_tareas' %}" class="btn-back">Volver</a>
+    <a href="{% url 'eliminar_tarea' tarea.pk %}" class="btn-delete">Eliminar</a>
+</div>
 
-        <div id="panel-form" class="panel">
-            <div class="form-grid">
-                <div class="full">
-                    <label>Título</label>{{ form.titulo }}
-                </div>
-                <div class="full">
-                    <label>Descripción</label>{{ form.descripcion }}
-                </div>
-                <div><label>Proyecto</label>{{ form.proyecto }}</div>
-                <div><label>Responsable</label>{{ form.responsable }}</div>
-                <div><label>Estado</label>{{ form.estado }}</div>
-                <div><label>Categoría</label>{{ form.categoria }}</div>
-                <div><label>Fecha inicio</label>{{ form.fecha_inicio }}</div>
-                <div><label>Fecha límite</label>{{ form.fecha_limite }}</div>
-            </div>
-            <div style="margin-top:20px;">
-                <button type="submit" class="btn">Guardar</button>
-                <a class="btn-cancel" href="{% url 'lista_tareas' %}">Volver</a>
-            </div>
-        </div>
-
-        <div id="panel-horas" class="panel">
-            {{ formset.management_form }}
-            <table class="tabla-horas">
-                <thead>
-                    <tr><th>Fecha</th><th>Descripción</th><th>Horas</th><th>Categoría</th><th>Borrar</th></tr>
-                </thead>
-                <tbody>
-                    {% for f in formset %}
-                    <tr>
-                        {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
-                        <td>{{ f.fecha }}</td>
-                        <td>{{ f.descripcion }}</td>
-                        <td>{{ f.horas }}</td>
-                        <td>{{ f.categoria }}</td>
-                        <td>{{ f.DELETE }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div style="margin-top:16px;">
-                <button type="submit" class="btn">Guardar</button>
-                <span style="color:rgba(255,255,255,0.4); font-size:12px; margin-left:10px;">Marcá "Borrar" para quitar una línea.</span>
-            </div>
-        </div>
-
-        <div id="panel-historial" class="panel">
-            {% for h in historial %}
-            <div class="historial-item">
-                {{ h.evento }}<span class="fecha">{{ h.creado_en|date:"d/m/Y H:i" }}</span>
-            </div>
-            {% empty %}
-            <div class="vacio">Sin cambios registrados.</div>
-            {% endfor %}
+<div class="detalle-body">
+    <div>
+        <div class="card-section">
+            <h4>Información general</h4>
+            <div class="field"><label>Título</label>{{ form.titulo }}</div>
+            <div class="field"><label>Descripción</label>{{ form.descripcion }}</div>
         </div>
     </div>
+    <div>
+        <div class="card-section">
+            <div class="field"><label>Proyecto</label>{{ form.proyecto }}</div>
+            <div class="field"><label>Responsable</label>{{ form.responsable }}</div>
+            <div class="field"><label>Categoría</label>{{ form.categoria }}</div>
+            <div class="field"><label>Estado</label>{{ form.estado }}</div>
+        </div>
+        <div class="card-section">
+            <div class="field"><label>Fecha inicio</label>{{ form.fecha_inicio }}</div>
+            <div class="field"><label>Fecha límite</label>{{ form.fecha_limite }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="tabs-bottom">
+    <input type="radio" name="tab" id="t2">
+    <label for="t2">Parte de horas</label>
+    <input type="radio" name="tab" id="t3">
+    <label for="t3">Historial</label>
+</div>
+
+<div id="panel-horas" class="panel">
+    {{ formset.management_form }}
+    <table class="tabla-horas">
+        <thead>
+            <tr><th>Fecha</th><th>Descripción</th><th>Horas</th><th>Categoría</th><th>Borrar</th></tr>
+        </thead>
+        <tbody>
+            {% for f in formset %}
+            <tr>
+                {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                <td>{{ f.fecha }}</td>
+                <td>{{ f.descripcion }}</td>
+                <td>{{ f.horas }}</td>
+                <td>{{ f.categoria }}</td>
+                <td>{{ f.DELETE }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div style="margin-top:14px;">
+        <button type="submit" class="btn-save">Guardar horas</button>
+    </div>
+</div>
+
+<div id="panel-historial" class="panel">
+    {% for h in historial %}
+    <div class="historial-item">
+        <span>{{ h.evento }}</span>
+        <span class="fecha">{{ h.creado_en|date:"d/m/Y H:i" }}</span>
+    </div>
+    {% empty %}
+    <div class="vacio">Sin cambios registrados.</div>
+    {% endfor %}
+</div>
+
 </form>
 {% endblock %}

@@ -1,9 +1,11 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='/login/')),
     path('registro/', views.registro, name='registro'),
-    path('login/', views.login_view, name='login'),
+    path('login/', views.login_view, name='login'),  
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('proyectos/', views.lista_proyectos, name='lista_proyectos'),
@@ -14,4 +16,8 @@ urlpatterns = [
     path('tareas/mover/', views.mover_tarea, name='mover_tarea'),
     path('tareas/<int:pk>/', views.detalle_tarea, name='detalle_tarea'),
     path('tareas/<int:pk>/asignar/', views.asignar_tarea, name='asignar_tarea'),
+    path('proyectos/crear/', views.crear_proyecto, name='crear_proyecto'),
+    path('tareas/crear/', views.crear_tarea, name='crear_tarea'),
+    path('tareas/<int:pk>/eliminar/', views.eliminar_tarea, name='eliminar_tarea'),
+    path('proyectos/<int:pk>/eliminar/', views.eliminar_proyecto, name='eliminar_proyecto'),
 ]
