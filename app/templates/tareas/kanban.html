@@ -14,11 +14,45 @@
 .card .meta { color: rgba(255,255,255,0.55); font-size: 11px; }
 .card .tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.14); color: #fff; margin-top: 4px; }
 .col-vacia { color: rgba(255,255,255,0.30); font-size: 12px; text-align: center; padding: 16px 0; }
-.filtros { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-bottom: 16px; display: grid; grid-template-columns: 1.5fr repeat(6, 1fr) auto; gap: 10px; align-items: end; }
+/* Buscador estilo Odoo */
+.search-shell { position: relative; margin-bottom: 16px; }
+.search-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 6px 12px;
+    flex-wrap: wrap;
+}
+.search-bar:focus-within { border-color: rgba(255,255,255,0.45); }
+.search-bar .ico { color: rgba(255,255,255,0.55); font-size: 14px; }
+.search-bar input { flex: 1; min-width: 200px; background: transparent; border: 0; color: #fff; font-size: 14px; outline: none; padding: 4px 0; }
+.search-bar .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.12); color: #fff;
+    padding: 3px 10px; border-radius: 14px; font-size: 12px;
+}
+.search-bar .chip a { color: rgba(255,255,255,0.7); text-decoration: none; font-weight: bold; margin-left: 2px; }
+.search-bar .chip a:hover { color: #fff; }
+.search-dropdown {
+    position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px;
+    background: #161616; border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 8px; padding: 6px 0; z-index: 50;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+}
+.search-dropdown a { display: block; padding: 8px 14px; color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
+.search-dropdown a:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.search-dropdown b { color: #fff; font-weight: 700; }
+.search-dropdown i { color: rgba(255,255,255,0.55); font-style: italic; }
+
+/* Filtros extra ocultos en details */
+.mas-filtros { margin-bottom: 16px; }
+.mas-filtros summary { color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; padding: 6px 0; }
+.mas-filtros summary:hover { color: #fff; }
+.filtros { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-top: 8px; display: grid; grid-template-columns: repeat(5, 1fr) auto; gap: 10px; align-items: end; }
 .filtros label { display: block; font-size: 11px; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
-.filtros input, .filtros select { width: 100%; padding: 7px 9px; background: #0a0f1e; color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; font-size: 13px; }
+.filtros input, .filtros select { width: 100%; padding: 7px 9px; background: #0d0d0d; color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; font-size: 13px; }
 .filtros .acciones { display: flex; gap: 6px; }
-.filtros button { padding: 8px 14px; background: #fff; color: #0a0f1e; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+.filtros button { padding: 8px 14px; background: #fff; color: #0d0d0d; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
 .filtros .limpiar { padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; text-decoration: none; font-size: 13px; }
 .card.arrastrando { opacity: 0.4; }
 .col.drop-target { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.40); }
@@ -40,61 +74,93 @@
     </a>
 </div>
 
-<form method="get" class="filtros">
-    <div>
-        <label>Buscar</label>
-        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Título...">
+{# Buscador estilo Odoo: una sola barra con dropdown de opciones de busqueda #}
+<div class="search-shell">
+    <div class="search-bar">
+        <span class="ico">🔍</span>
+        {% if filtros.q %}<span class="chip">Título: "{{ filtros.q }}" <a href="{% url 'kanban_tareas' %}">×</a></span>{% endif %}
+        {% if filtros.proyecto_q %}<span class="chip">Proyecto: "{{ filtros.proyecto_q }}" <a href="{% url 'kanban_tareas' %}">×</a></span>{% endif %}
+        {% if filtros.responsable_q %}<span class="chip">Responsable: "{{ filtros.responsable_q }}" <a href="{% url 'kanban_tareas' %}">×</a></span>{% endif %}
+        <input id="busqueda" type="text" placeholder="Buscar...">
     </div>
-    <div>
-        <label>Proyecto</label>
-        <select name="proyecto">
-            <option value="">(todos)</option>
-            {% for p in proyectos_disponibles %}
-            <option value="{{ p.pk }}" {% if filtros.proyecto == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.nombre }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div>
-        <label>Categoría</label>
-        <select name="categoria">
-            <option value="">(todas)</option>
-            {% for codigo, label in categorias %}
-            <option value="{{ codigo }}" {% if filtros.categoria == codigo %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div>
-        <label>Estado</label>
-        <select name="estado">
-            <option value="">(todos)</option>
-            {% for codigo, label in estados %}
-            <option value="{{ codigo }}" {% if filtros.estado == codigo %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div>
-        <label>Responsable</label>
-        <select name="responsable">
-            <option value="">(todos)</option>
-            <option value="sin_asignar" {% if filtros.responsable == 'sin_asignar' %}selected{% endif %}>(sin asignar)</option>
-            {% for u in usuarios %}
-            <option value="{{ u.pk }}" {% if filtros.responsable == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div>
-        <label>Desde</label>
-        <input type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}">
-    </div>
-    <div>
-        <label>Hasta</label>
-        <input type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
-    </div>
-    <div class="acciones">
-        <button type="submit">Filtrar</button>
-        <a class="limpiar" href="{% url 'kanban_tareas' %}">Limpiar</a>
-    </div>
-</form>
+    <div class="search-dropdown" id="search-dropdown" style="display:none;"></div>
+</div>
+
+<details class="mas-filtros">
+    <summary>Más filtros</summary>
+    <form method="get" class="filtros">
+        <div>
+            <label>Proyecto</label>
+            <select name="proyecto">
+                <option value="">(todos)</option>
+                {% for p in proyectos_disponibles %}
+                <option value="{{ p.pk }}" {% if filtros.proyecto == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Categoría</label>
+            <select name="categoria">
+                <option value="">(todas)</option>
+                {% for codigo, label in categorias %}
+                <option value="{{ codigo }}" {% if filtros.categoria == codigo %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Estado</label>
+            <select name="estado">
+                <option value="">(todos)</option>
+                {% for codigo, label in estados %}
+                <option value="{{ codigo }}" {% if filtros.estado == codigo %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Desde</label>
+            <input type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}">
+        </div>
+        <div>
+            <label>Hasta</label>
+            <input type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
+        </div>
+        <div class="acciones">
+            <button type="submit">Filtrar</button>
+            <a class="limpiar" href="{% url 'kanban_tareas' %}">Limpiar</a>
+        </div>
+    </form>
+</details>
+
+<script>
+(function() {
+    const input = document.getElementById('busqueda');
+    const dd = document.getElementById('search-dropdown');
+    function pintar(v) {
+        const enc = encodeURIComponent(v);
+        dd.innerHTML = `
+            <a href="?q=${enc}">Buscar <b>Título</b> para: <i>${v}</i></a>
+            <a href="?proyecto_q=${enc}">Buscar <b>Proyecto</b> para: <i>${v}</i></a>
+            <a href="?responsable_q=${enc}">Buscar <b>Responsable</b> para: <i>${v}</i></a>
+        `;
+        dd.style.display = 'block';
+    }
+    input.addEventListener('input', () => {
+        const v = input.value.trim();
+        if (!v) { dd.style.display = 'none'; return; }
+        pintar(v);
+    });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const v = input.value.trim();
+            if (v) window.location = '?q=' + encodeURIComponent(v);
+        }
+    });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.search-shell')) dd.style.display = 'none';
+    });
+})();
+</script>
 
 <form id="csrf" style="display:none">{% csrf_token %}</form>
 <div id="kanban-config" data-proyecto-id="{{ proyecto_actual_id|default_if_none:'' }}" hidden></div>
@@ -128,7 +194,12 @@ const csrf = document.querySelector('#csrf input[name=csrfmiddlewaretoken]').val
 const moverUrl = "{% url 'mover_tarea' %}";
 
 document.querySelectorAll('.card').forEach(card => {
+    // Si la accion comienza sobre un link, no inicia el drag (deja navegar al detalle)
     card.addEventListener('dragstart', e => {
+        if (e.target.tagName === 'A' || e.target.closest('a')) {
+            e.preventDefault();
+            return;
+        }
         e.dataTransfer.setData('text/plain', card.dataset.tarea);
         card.classList.add('arrastrando');
     });

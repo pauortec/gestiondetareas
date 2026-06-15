@@ -130,6 +130,8 @@ def kanban_tareas(request):
     qs = tareas_de(request.user).select_related('proyecto', 'responsable').order_by('posicion')
     filtros = {
         'q': request.GET.get('q', '').strip(),
+        'proyecto_q': request.GET.get('proyecto_q', '').strip(),
+        'responsable_q': request.GET.get('responsable_q', '').strip(),
         'categoria': request.GET.get('categoria', ''),
         'estado': request.GET.get('estado', ''),
         'responsable': request.GET.get('responsable', ''),
@@ -139,6 +141,10 @@ def kanban_tareas(request):
     }
     if filtros['q']:
         qs = qs.filter(titulo__icontains=filtros['q'])
+    if filtros['proyecto_q']:
+        qs = qs.filter(proyecto__nombre__icontains=filtros['proyecto_q'])
+    if filtros['responsable_q']:
+        qs = qs.filter(responsable__username__icontains=filtros['responsable_q'])
     if filtros['categoria']:
         qs = qs.filter(categoria=filtros['categoria'])
     if filtros['estado']:
@@ -246,22 +252,33 @@ def crear_proyecto(request):
 
 @login_required
 def crear_tarea(request):
+    # Proyecto fijo via URL (?proyecto=ID) o hidden en POST: queda preseleccionado
+    proyecto_id = request.GET.get('proyecto') or request.POST.get('proyecto_fijo_id')
+    proyecto_fijo = None
+    if proyecto_id:
+        proyecto_fijo = proyectos_de(request.user).filter(pk=proyecto_id).first()
+
     if request.method == 'POST':
-        form = TareaForm(request.POST)
+        datos = request.POST.copy()
+        if proyecto_fijo:
+            datos['proyecto'] = proyecto_fijo.pk
+        form = TareaForm(datos)
         if form.is_valid():
             tarea = form.save()
-            messages.success(request, 'Tarea creada correctamente.')
-            return redirect('detalle_tarea', pk=tarea.pk)
+            messages.success(request, f'Tarea "{tarea.titulo}" creada correctamente.')
+            return redirect('kanban_tareas')
     else:
-        form = TareaForm(initial={
-            'proyecto': request.GET.get('proyecto'),
-            'estado': request.GET.get('estado', 'relevamiento'),
-        })
+        initial = {'estado': request.GET.get('estado', 'relevamiento')}
+        if proyecto_fijo:
+            initial['proyecto'] = proyecto_fijo.pk
+        form = TareaForm(initial=initial)
+
     return render(request, 'tareas/crear.html', {
         'form': form,
         'proyectos': proyectos_de(request.user),
         'usuarios': User.objects.order_by('username'),
         'categorias': CATEGORIAS,
+        'proyecto_fijo': proyecto_fijo,
     })
 
 @login_required

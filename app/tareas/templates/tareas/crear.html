@@ -8,7 +8,7 @@
 .status-bar { display: flex; gap: 0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 8px; overflow: hidden; }
 .status-bar .step { padding: 8px 18px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.45); cursor: pointer; border-right: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; white-space: nowrap; }
 .status-bar .step:last-child { border-right: none; }
-.status-bar .step.active { background: #fff; color: #0a0f1e; }
+.status-bar .step.active { background: #fff; color: #0d0d0d; }
 .status-bar .step:hover:not(.active) { background: rgba(255,255,255,0.08); color: #fff; }
 
 .titulo-field { margin-bottom: 20px; }
@@ -33,7 +33,7 @@
 .sidebar-field input[disabled] { opacity: 0.6; }
 
 .form-actions { display: flex; gap: 12px; margin-top: 8px; }
-.btn-save { padding: 10px 28px; background: #fff; border: none; border-radius: 8px; color: #0a0f1e; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+.btn-save { padding: 10px 28px; background: #fff; border: none; border-radius: 8px; color: #0d0d0d; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
 .btn-save:hover { opacity: 0.88; }
 .btn-cancel { padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: background 0.2s; }
 .btn-cancel:hover { background: rgba(255,255,255,0.10); }
@@ -91,14 +91,11 @@
         <div class="sidebar-card">
             <div class="sidebar-field">
                 <label>Proyecto</label>
-                {% if request.GET.proyecto %}
-                    {# Proyecto fijado por URL: queda bloqueado para que la tarea sea de ese proyecto #}
-                    {% for p in proyectos %}
-                        {% if p.pk|stringformat:"s" == request.GET.proyecto %}
-                            <input type="hidden" name="proyecto" value="{{ p.pk }}">
-                            <input type="text" value="{{ p.nombre }}" disabled>
-                        {% endif %}
-                    {% endfor %}
+                {% if proyecto_fijo %}
+                    {# Proyecto fijado: queda preseleccionado y no se puede cambiar #}
+                    <input type="hidden" name="proyecto" value="{{ proyecto_fijo.pk }}">
+                    <input type="hidden" name="proyecto_fijo_id" value="{{ proyecto_fijo.pk }}">
+                    <input type="text" value="{{ proyecto_fijo.nombre }}" disabled>
                 {% else %}
                     <select name="proyecto" required>
                         <option value="">— Seleccioná —</option>
