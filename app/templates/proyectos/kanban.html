@@ -2,30 +2,76 @@
 {% block title %}Proyectos (Kanban){% endblock %}
 
 {% block estilos %}<style>
-.toggle { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; }
-.toggle:hover { color: #fff; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-.card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; }
+.toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.filtros { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+.filtros input, .filtros select {
+    padding: 7px 10px; background: #0a0f1e; color: #fff;
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; font-size: 13px;
+}
+.filtros button {
+    padding: 8px 14px; background: #fff; color: #0a0f1e; border: 0; border-radius: 6px;
+    cursor: pointer; font-weight: 600; font-size: 13px;
+}
+.filtros .limpiar {
+    padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+    text-decoration: none; font-size: 13px;
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: 10px; padding: 16px; color: #fff; }
 .card h3 { font-size: 16px; margin-bottom: 8px; }
-.card .meta { color: rgba(255,255,255,0.5); font-size: 12px; }
-.card .num { color: #38bdf8; font-weight: 700; font-size: 22px; margin-top: 8px; }
+.card .meta { color: rgba(255,255,255,0.55); font-size: 12px; margin-bottom: 4px; }
+.card .num { color: #fff; font-weight: 700; font-size: 22px; margin: 8px 0 12px; }
+.tag-etapa { display: inline-block; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.10); color: #fff; font-size: 11px; margin-bottom: 8px; }
+.card-actions { display: flex; gap: 8px; margin-top: 6px; }
+.btn-card { padding: 5px 12px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.22); border-radius: 5px; color: #fff; font-size: 12px; font-weight: 600; text-decoration: none; }
+.btn-card:hover { background: rgba(255,255,255,0.18); }
 </style>{% endblock %}
 
 {% block contenido %}
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+<div class="toolbar">
     <h2 style="margin:0;">Proyectos</h2>
-    <a class="toggle" href="{% url 'lista_proyectos' %}">Ver como lista</a>
+    <a href="{% url 'crear_proyecto' %}" class="btn-primario">+ Nuevo proyecto</a>
 </div>
+
+<div class="view-toggle">
+    <a href="{% url 'kanban_proyectos' %}" class="active" title="Kanban">
+        <svg viewBox="0 0 24 24"><path d="M3 4h6v16H3zM10 4h4v10h-4zM15 4h6v7h-6z"/></svg>
+    </a>
+    <a href="{% url 'lista_proyectos' %}" title="Lista">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/></svg>
+    </a>
+</div>
+
+<form method="get" class="filtros">
+    <input type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar proyecto...">
+    <select name="etapa">
+        <option value="">Etapa (todas)</option>
+        {% for codigo, label in etapas %}
+        <option value="{{ codigo }}" {% if filtros.etapa == codigo %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+    <a class="limpiar" href="{% url 'kanban_proyectos' %}">Limpiar</a>
+</form>
+
 <div class="grid">
     {% for p in proyectos %}
     <div class="card">
         <h3>{{ p.nombre }}</h3>
+        <span class="tag-etapa">{{ p.get_etapa_display }}</span>
         <div class="meta">Propietario: {{ p.propietario.username }}</div>
         <div class="meta">Creado: {{ p.creado_en|date:"d/m/Y" }}</div>
-        <div class="num">{{ p.num_tareas }}<span style="font-size:12px; color:rgba(255,255,255,0.5);"> tareas</span></div>
+        <div class="num">{{ p.num_tareas }}<span style="font-size:12px; color:rgba(255,255,255,0.55);"> tareas</span></div>
+        <div class="card-actions">
+            <a href="{% url 'crear_tarea' %}?proyecto={{ p.pk }}" class="btn-card">Nuevo</a>
+            {% if p.propietario == request.user %}
+            <a href="{% url 'compartir_proyecto' p.pk %}" class="btn-card">Compartir</a>
+            {% endif %}
+        </div>
     </div>
     {% empty %}
-    <div class="vacio">No tenés proyectos todavía.</div>
+    <div class="vacio">No hay proyectos que coincidan con los filtros.</div>
     {% endfor %}
 </div>
 {% endblock %}

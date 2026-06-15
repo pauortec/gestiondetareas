@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 
 from .accesos import proyectos_de, tareas_de, puede_ver_tarea, puede_ver_proyecto
-from .models import Tarea, Proyecto, ESTADOS, CATEGORIAS
+from .models import Tarea, Proyecto, ESTADOS, CATEGORIAS, ETAPAS_PROYECTO
 from .forms import TareaForm, PartesHorasFormSet
 
 ESTADOS_VALIDOS = {codigo for codigo, _ in ESTADOS}
@@ -23,6 +23,7 @@ class RegistroForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].max_length = 20
+        self.fields['username'].label = 'Usuario'
         self.fields['username'].validators = [
             validators.RegexValidator(
                 r'^[a-zA-Z0-9]+$',
@@ -30,7 +31,9 @@ class RegistroForm(UserCreationForm):
             )
         ]
         self.fields['username'].help_text = 'Máximo 20 caracteres. Solo letras y números.'
+        self.fields['password1'].label = 'Contraseña'
         self.fields['password1'].help_text = 'Mínimo 4 caracteres.'
+        self.fields['password2'].label = 'Confirmar contraseña'
         self.fields['password2'].help_text = 'Ingresá la misma contraseña para verificar.'
 
 def registro(request):
@@ -53,6 +56,9 @@ def login_view(request):
             return redirect('dashboard')
     else:
         form = AuthenticationForm()
+    # Traducimos las labels nativas a espanol
+    form.fields['username'].label = 'Usuario'
+    form.fields['password'].label = 'Contraseña'
     return render(request, 'auth/login.html', {'form': form})
 
 def logout_view(request):
@@ -64,15 +70,37 @@ def dashboard(request):
     proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
     return render(request, 'dashboard.html', {'proyectos': proyectos})
 
+def _proyectos_filtrados(request):
+    qs = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
+    filtros = {
+        'q': request.GET.get('q', '').strip(),
+        'etapa': request.GET.get('etapa', ''),
+    }
+    if filtros['q']:
+        qs = qs.filter(nombre__icontains=filtros['q'])
+    if filtros['etapa']:
+        qs = qs.filter(etapa=filtros['etapa'])
+    return qs, filtros
+
+
 @login_required
 def lista_proyectos(request):
-    proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
-    return render(request, 'proyectos/lista.html', {'proyectos': proyectos})
+    proyectos, filtros = _proyectos_filtrados(request)
+    return render(request, 'proyectos/lista.html', {
+        'proyectos': proyectos,
+        'filtros': filtros,
+        'etapas': ETAPAS_PROYECTO,
+    })
+
 
 @login_required
 def kanban_proyectos(request):
-    proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
-    return render(request, 'proyectos/kanban.html', {'proyectos': proyectos})
+    proyectos, filtros = _proyectos_filtrados(request)
+    return render(request, 'proyectos/kanban.html', {
+        'proyectos': proyectos,
+        'filtros': filtros,
+        'etapas': ETAPAS_PROYECTO,
+    })
 
 @login_required
 def compartir_proyecto(request, pk):

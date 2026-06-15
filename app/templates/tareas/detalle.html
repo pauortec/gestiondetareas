@@ -21,7 +21,7 @@
     white-space: nowrap;
 }
 .status-bar a:last-child { border-right: none; }
-.status-bar a.active { background: #38bdf8; color: #0a0f1e; }
+.status-bar a.active { background: #fff; color: #0a0f1e; }
 .status-bar a:hover:not(.active) { background: rgba(255,255,255,0.07); color: #fff; }
 .detalle-header {
     display: flex;
@@ -36,8 +36,8 @@
 .form-actions { display: flex; gap: 10px; margin-bottom: 24px; margin-top: 16px; align-items: center; }
 .btn-save {
     padding: 9px 24px;
-    background: linear-gradient(135deg, #1a6fd4, #38bdf8);
-    border: none; border-radius: 8px; color: #fff;
+    background: #fff;
+    border: none; border-radius: 8px; color: #0a0f1e;
     font-size: 14px; font-weight: 600; cursor: pointer;
 }
 .btn-save:hover { opacity: 0.88; }
@@ -80,7 +80,7 @@
     border-radius: 6px; color: #fff; font-size: 13px;
     font-family: inherit; transition: border-color 0.2s;
 }
-.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #38bdf8; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: rgba(255,255,255,0.55); }
 .field select option { background: #1a2035; }
 .field textarea { resize: vertical; min-height: 100px; }
 .tabs-bottom {
@@ -93,7 +93,7 @@
     color: rgba(255,255,255,0.55);
     border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
-.tabs-bottom input[type=radio]:checked + label { color: #fff; border-bottom-color: #38bdf8; }
+.tabs-bottom input[type=radio]:checked + label { color: #fff; border-bottom-color: #fff; }
 .panel { display: none; }
 #t2:checked ~ #panel-horas { display: block; }
 #t3:checked ~ #panel-historial { display: block; }

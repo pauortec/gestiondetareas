@@ -2,33 +2,42 @@
 {% block title %}Tareas (Kanban){% endblock %}
 
 {% block estilos %}<style>
-.toggle { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; }
-.toggle:hover { color: #fff; }
+.toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .tablero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: start; }
-.col { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px; min-height: 200px; }
-.col-titulo { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; }
-.col-titulo .conteo { color: #38bdf8; }
-.card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.col { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; min-height: 200px; }
+.col-titulo { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.78); padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items: center; }
+.col-titulo .conteo { color: #fff; }
+.col-titulo .add-card { color: #fff; font-size: 18px; line-height: 1; text-decoration: none; padding: 0 6px; }
+.col-titulo .add-card:hover { opacity: 0.7; }
+.card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: grab; color: #fff; }
 .card .titulo { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-.card .meta { color: rgba(255,255,255,0.5); font-size: 11px; }
-.card .tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(56,189,248,0.15); color: #38bdf8; margin-top: 4px; }
-.col-vacia { color: rgba(255,255,255,0.3); font-size: 12px; text-align: center; padding: 16px 0; }
+.card .meta { color: rgba(255,255,255,0.55); font-size: 11px; }
+.card .tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.14); color: #fff; margin-top: 4px; }
+.col-vacia { color: rgba(255,255,255,0.30); font-size: 12px; text-align: center; padding: 16px 0; }
 .filtros { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-bottom: 16px; display: grid; grid-template-columns: 1.5fr repeat(6, 1fr) auto; gap: 10px; align-items: end; }
-.filtros label { display: block; font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
-.filtros input, .filtros select { width: 100%; padding: 7px 9px; background: #0a0f1e; color: #fff; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; font-size: 13px; }
+.filtros label { display: block; font-size: 11px; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
+.filtros input, .filtros select { width: 100%; padding: 7px 9px; background: #0a0f1e; color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; font-size: 13px; }
 .filtros .acciones { display: flex; gap: 6px; }
-.filtros button { padding: 8px 14px; background: #38bdf8; color: #0a0f1e; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
-.filtros .limpiar { padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff; border-radius: 6px; text-decoration: none; font-size: 13px; }
-.card { cursor: grab; }
+.filtros button { padding: 8px 14px; background: #fff; color: #0a0f1e; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+.filtros .limpiar { padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; text-decoration: none; font-size: 13px; }
 .card.arrastrando { opacity: 0.4; }
-.col.drop-target { background: rgba(56,189,248,0.10); border-color: #38bdf8; }
+.col.drop-target { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.40); }
 .zona { min-height: 30px; }
 </style>{% endblock %}
 
 {% block contenido %}
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+<div class="toolbar">
     <h2 style="margin:0;">Tablero de tareas</h2>
-    <a class="toggle" href="{% url 'lista_tareas' %}">Ver como lista</a>
+    <a href="{% url 'crear_tarea' %}" class="btn-primario">+ Nueva tarea</a>
+</div>
+
+<div class="view-toggle">
+    <a href="{% url 'kanban_tareas' %}" class="active" title="Kanban">
+        <svg viewBox="0 0 24 24"><path d="M3 4h6v16H3zM10 4h4v10h-4zM15 4h6v7h-6z"/></svg>
+    </a>
+    <a href="{% url 'lista_tareas' %}" title="Lista">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/></svg>
+    </a>
 </div>
 
 <form method="get" class="filtros">
@@ -97,10 +106,9 @@
             <span>{{ col.label }}</span>
             <div style="display:flex; align-items:center; gap:8px;">
                 <span class="conteo">{{ col.tareas|length }}</span>
-            <a href="{% url 'crear_tarea' %}?estado={{ col.codigo }}{% if filtros.proyecto %}&proyecto={{ filtros.proyecto }}{% endif %}"
-                    style="color:#38bdf8; font-size:18px; line-height:1; text-decoration:none;">+</a>
+                <a class="add-card" href="{% url 'crear_tarea' %}?estado={{ col.codigo }}{% if filtros.proyecto %}&proyecto={{ filtros.proyecto }}{% endif %}">+</a>
+            </div>
         </div>
-    </div>
         <div class="zona">
             {% for t in col.tareas %}
             <div class="card" data-tarea="{{ t.pk }}" draggable="true">
@@ -116,7 +124,6 @@
 </div>
 
 <script>
-// Arrastrar tarjetas entre columnas y persistir el orden en el servidor
 const csrf = document.querySelector('#csrf input[name=csrfmiddlewaretoken]').value;
 const moverUrl = "{% url 'mover_tarea' %}";
 
@@ -129,7 +136,6 @@ document.querySelectorAll('.card').forEach(card => {
 });
 
 // Si el tablero esta filtrado por un solo proyecto, abre el WS de ese tablero.
-// El id viene en un data-attribute del HTML asi el linter no ve sintaxis Django dentro del JS.
 const proyectoActualId = parseInt(document.getElementById('kanban-config').dataset.proyectoId, 10);
 if (proyectoActualId) {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
