@@ -30,12 +30,7 @@ class RegistroForm(UserCreationForm):
             )
         ]
         self.fields['username'].help_text = 'Máximo 20 caracteres. Solo letras y números.'
-        self.fields['password1'].help_text = '''
-            Tu contraseña no puede ser similar a tu información personal.<br>
-            Debe tener al menos 8 caracteres.<br>
-            No puede ser una contraseña común.<br>
-            No puede ser completamente numérica.
-        '''
+        self.fields['password1'].help_text = 'Mínimo 4 caracteres.'
         self.fields['password2'].help_text = 'Ingresá la misma contraseña para verificar.'
 
 def registro(request):
