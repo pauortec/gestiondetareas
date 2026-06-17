@@ -5,102 +5,102 @@
     <title>{% block title %}Gestión de Tareas{% endblock %}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { min-height: 100vh; background: #0d0d0d; font-family: 'Segoe UI', sans-serif; color: #fff; }
+        body { min-height: 100vh; background: #f9fafb; font-family: 'Segoe UI', sans-serif; color: #111827; }
 
-        a { color: #fff; }
+        a { color: #111827; }
 
         .navbar {
-            background: rgba(255,255,255,0.05);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 16px 32px;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 14px 32px;
             display: flex;
             align-items: center;
             gap: 32px;
         }
-        .navbar h1 { font-size: 20px; font-weight: 700; color: #fff; }
-        .navbar h1 span { color: #fff; }
+        .navbar h1 { font-size: 20px; font-weight: 700; color: #111827; }
+        .navbar h1 span { color: #374151; }
         .nav-links { display: flex; gap: 20px; flex: 1; }
-        .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; }
-        .nav-links a:hover { color: #fff; }
+        .nav-links a { color: #4b5563; text-decoration: none; font-size: 14px; }
+        .nav-links a:hover { color: #111827; }
         .btn-logout {
-            padding: 8px 16px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.15);
+            padding: 7px 14px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            color: #fff;
+            color: #374151;
             font-size: 13px;
             text-decoration: none;
         }
-        .btn-logout:hover { background: rgba(255,255,255,0.14); }
+        .btn-logout:hover { background: #f9fafb; color: #111827; }
 
-        .container { padding: 40px 32px; }
-        .container h2 { font-size: 22px; margin-bottom: 20px; color: #fff; }
+        .container { padding: 32px; }
+        .container h2 { font-size: 22px; margin-bottom: 20px; color: #111827; }
 
-        table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.03); border-radius: 10px; overflow: hidden; }
-        th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; color: #fff; }
-        th { color: rgba(255,255,255,0.75); font-weight: 600; background: rgba(255,255,255,0.04); }
-        tr:hover td { background: rgba(255,255,255,0.04); }
-        .vacio { color: rgba(255,255,255,0.5); padding: 24px 16px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+        th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: #111827; }
+        th { color: #6b7280; font-weight: 600; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+        tr:hover td { background: #f9fafb; }
+        .vacio { color: #9ca3af; padding: 24px 16px; }
 
-        /* Toggle Kanban/Lista estilo Odoo, va debajo del header de cada pantalla */
-        .view-toggle { display: inline-flex; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 3px; gap: 2px; margin-bottom: 18px; }
+        /* Toggle Kanban/Lista estilo Odoo */
+        .view-toggle { display: inline-flex; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 3px; gap: 2px; margin-bottom: 18px; }
         .view-toggle a {
             display: inline-flex; align-items: center; justify-content: center;
             width: 36px; height: 30px; border-radius: 6px;
-            color: rgba(255,255,255,0.55);
+            color: #9ca3af;
             text-decoration: none; transition: background 0.15s, color 0.15s;
         }
-        .view-toggle a:hover { color: #fff; }
-        .view-toggle a.active { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+        .view-toggle a:hover { color: #374151; background: #f3f4f6; }
+        .view-toggle a.active { background: #374151; color: #fff; }
         .view-toggle svg { width: 16px; height: 16px; fill: currentColor; }
 
         .toast-notif {
             position: fixed; top: 80px; right: 24px;
-            background: #fff; color: #0d0d0d;
+            background: #111827; color: #fff;
             padding: 12px 18px; border-radius: 8px;
             font-size: 13px; font-weight: 600;
             opacity: 0; transform: translateX(20px);
             transition: opacity 0.3s, transform 0.3s;
             z-index: 1000; max-width: 320px;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.15);
         }
         .toast-notif.visible { opacity: 1; transform: translateX(0); }
 
         .msg-success {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.25);
+            background: #f0fdf4;
+            border: 1px solid #86efac;
             border-radius: 8px;
             padding: 10px 16px;
             margin-bottom: 16px;
-            color: #fff;
+            color: #15803d;
             font-size: 13px;
         }
 
         /* Botones genericos */
         .btn-primario {
-            background: #fff; color: #0d0d0d;
+            background: #111827; color: #fff;
             border: none; border-radius: 8px;
             padding: 9px 16px; font-weight: 600; font-size: 13px;
             text-decoration: none; cursor: pointer; display: inline-block;
         }
-        .btn-primario:hover { opacity: 0.88; }
+        .btn-primario:hover { background: #374151; color: #fff; opacity: 1; }
         .btn-secundario {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.18);
-            color: #fff;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            color: #374151;
             border-radius: 8px; padding: 9px 16px; font-size: 13px;
             text-decoration: none; cursor: pointer; display: inline-block;
         }
-        .btn-secundario:hover { background: rgba(255,255,255,0.12); }
+        .btn-secundario:hover { background: #f9fafb; }
     </style>
     {% block estilos %}{% endblock %}
 </head>
 <body>
     <nav class="navbar">
-        <h1>Gesti<span>Task</span></h1>
+        <h1><a href="{% url 'kanban_proyectos' %}" style="text-decoration:none; color:inherit;">Gesti<span>Task</span></a></h1>
         <div class="nav-links">
-            <a href="{% url 'lista_proyectos' %}">Proyectos</a>
-            <a href="{% url 'lista_tareas' %}">Tareas</a>
+            <a href="{% url 'kanban_proyectos' %}">Proyectos</a>
+            <a href="{% url 'kanban_tareas' %}">Tareas</a>
         </div>
         <a class="btn-logout" href="{% url 'logout' %}">Salir</a>
     </nav>
@@ -120,7 +120,7 @@
         const ws = new WebSocket(`${proto}://${location.host}/ws/notificaciones/`);
         ws.onmessage = function (e) {
             const msg = JSON.parse(e.data);
-            mostrarToast(msg.mensaje || 'Tenés una notificación nueva');
+            mostrarToast(msg.mensaje || 'Tenes una notificacion nueva');
         };
         function mostrarToast(texto) {
             const div = document.createElement('div');
