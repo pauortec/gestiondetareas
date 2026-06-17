@@ -95,11 +95,19 @@ def lista_proyectos(request):
 
 @login_required
 def kanban_proyectos(request):
-    proyectos, filtros = _proyectos_filtrados(request)
+    qs = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
+    filtros = {'q': request.GET.get('q', '').strip()}
+    if filtros['q']:
+        qs = qs.filter(nombre__icontains=filtros['q'])
+    proyectos_lista = list(qs)
+    indice = {codigo: [] for codigo, _ in ETAPAS_PROYECTO}
+    for p in proyectos_lista:
+        if p.etapa in indice:
+            indice[p.etapa].append(p)
+    columnas = [{'codigo': c, 'label': l, 'proyectos': indice[c]} for c, l in ETAPAS_PROYECTO]
     return render(request, 'proyectos/kanban.html', {
-        'proyectos': proyectos,
+        'columnas': columnas,
         'filtros': filtros,
-        'etapas': ETAPAS_PROYECTO,
     })
 
 @login_required
@@ -244,11 +252,12 @@ def mover_tarea(request):
 def crear_proyecto(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
+        etapa = request.POST.get('etapa', 'implementacion')
         if nombre:
-            Proyecto.objects.create(nombre=nombre, propietario=request.user)
+            Proyecto.objects.create(nombre=nombre, etapa=etapa, propietario=request.user)
             messages.success(request, 'Proyecto creado correctamente.')
             return redirect('dashboard')
-    return render(request, 'proyectos/crear.html')
+    return render(request, 'proyectos/crear.html', {'etapas': ETAPAS_PROYECTO})
 
 @login_required
 def crear_tarea(request):
