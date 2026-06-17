@@ -3,7 +3,6 @@
 
 {% block estilos %}<style>
 .toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
-.link-blanco { color: #fff; font-weight: 600; }
 </style>{% endblock %}
 
 {% block contenido %}
@@ -36,13 +35,13 @@
     <tbody>
         {% for t in tareas %}
         <tr>
-            <td><a href="{% url 'detalle_tarea' t.pk %}" class="link-blanco">{{ t.titulo }}</a></td>
+            <td><a href="{% url 'detalle_tarea' t.pk %}" style="font-weight:600;">{{ t.titulo }}</a></td>
             <td>{{ t.proyecto.nombre }}</td>
             <td>{{ t.get_estado_display }}</td>
             <td>{{ t.get_categoria_display }}</td>
             <td>{{ t.responsable.username|default:"-" }}</td>
             <td>{{ t.fecha_limite|date:"d/m/Y"|default:"-" }}</td>
-            <td><a href="{% url 'asignar_tarea' t.pk %}" class="link-blanco">Asignar</a></td>
+            <td><a href="{% url 'asignar_tarea' t.pk %}">Asignar</a></td>
         </tr>
         {% empty %}
         <tr><td colspan="7" class="vacio">No hay tareas para mostrar.</td></tr>
