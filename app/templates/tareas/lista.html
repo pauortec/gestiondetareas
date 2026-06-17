@@ -1,11 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}Tareas{% endblock %}
 
+{% block estilos %}<style>
+.toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+</style>{% endblock %}
+
 {% block contenido %}
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+<div class="toolbar">
     <h2 style="margin:0;">Tareas</h2>
-    <a href="{% url 'kanban_tareas' %}" style="color:rgba(255,255,255,0.6); font-size:13px; text-decoration:none;">Ver como kanban</a>
+    <a href="{% url 'crear_tarea' %}" class="btn-primario">+ Nueva tarea</a>
 </div>
+
+<div class="view-toggle">
+    <a href="{% url 'kanban_tareas' %}" title="Kanban">
+        <svg viewBox="0 0 24 24"><path d="M3 4h6v16H3zM10 4h4v10h-4zM15 4h6v7h-6z"/></svg>
+    </a>
+    <a href="{% url 'lista_tareas' %}" class="active" title="Lista">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/></svg>
+    </a>
+</div>
+
 <table>
     <thead>
         <tr>
@@ -21,13 +35,13 @@
     <tbody>
         {% for t in tareas %}
         <tr>
-            <td><a href="{% url 'detalle_tarea' t.pk %}" style="color:#fff; text-decoration:none;">{{ t.titulo }}</a></td>
+            <td><a href="{% url 'detalle_tarea' t.pk %}" style="font-weight:600;">{{ t.titulo }}</a></td>
             <td>{{ t.proyecto.nombre }}</td>
             <td>{{ t.get_estado_display }}</td>
             <td>{{ t.get_categoria_display }}</td>
             <td>{{ t.responsable.username|default:"-" }}</td>
             <td>{{ t.fecha_limite|date:"d/m/Y"|default:"-" }}</td>
-            <td><a href="{% url 'asignar_tarea' t.pk %}" style="color:#38bdf8;">Asignar</a></td>
+            <td><a href="{% url 'asignar_tarea' t.pk %}">Asignar</a></td>
         </tr>
         {% empty %}
         <tr><td colspan="7" class="vacio">No hay tareas para mostrar.</td></tr>

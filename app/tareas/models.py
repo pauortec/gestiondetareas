@@ -16,6 +16,16 @@ ESTADOS = [
     ('terminado', 'Terminado'),
 ]
 
+# Etapas del proyecto (mismas que usa Odoo para tableros de proyectos)
+ETAPAS_PROYECTO = [
+    ('implementacion', 'En Implementación'),
+    ('produccion', 'En Producción'),
+    ('con_soporte', 'Con soporte'),
+    ('sin_soporte', 'Sin soporte'),
+    ('interno', 'Interno'),
+    ('cancelado', 'Cancelado'),
+]
+
 
 class Proyecto(models.Model):
     nombre = models.CharField(max_length=100)
@@ -23,6 +33,8 @@ class Proyecto(models.Model):
     propietario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='proyectos')
     # Usuarios con acceso explicito al proyecto
     colaboradores = models.ManyToManyField(User, related_name='proyectos_compartidos', blank=True)
+    # Etapa actual del proyecto (mismo set que usa Odoo)
+    etapa = models.CharField(max_length=20, choices=ETAPAS_PROYECTO, default='implementacion')
     creado_en = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Nuevo tablero - GestiTask{% endblock %}
+
+{% block estilos %}
+<style>
+.form-card {
+    max-width: 480px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 32px;
+}
+.form-card h2 { font-size: 20px; margin-bottom: 24px; }
+
+.field { margin-bottom: 20px; }
+.field label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+.field input, .field select {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+}
+.field input:focus, .field select:focus {
+    outline: none;
+    border-color: rgba(255,255,255,0.55);
+}
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+.btn-primary {
+    flex: 1;
+    padding: 11px;
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    color: #0d0d0d;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-cancel {
+    padding: 11px 20px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    text-decoration: none;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="form-card">
+    <h2>Nuevo tablero</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="field">
+            <label for="nombre">Nombre del proyecto</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Ej: Sistema de ventas" required autofocus>
+        </div>
+        <div class="actions">
+            <a href="{% url 'dashboard' %}" class="btn-cancel">Cancelar</a>
+            <button type="submit" class="btn-primary">Crear tablero</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

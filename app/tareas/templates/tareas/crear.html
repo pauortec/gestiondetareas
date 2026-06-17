@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Nueva Tarea - GestiTask{% endblock %}
+
+{% block estilos %}<style>
+.form-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.form-header h2 { font-size: 20px; font-weight: 600; }
+
+.status-bar { display: flex; gap: 0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 8px; overflow: hidden; }
+.status-bar .step { padding: 8px 18px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.45); cursor: pointer; border-right: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; white-space: nowrap; }
+.status-bar .step:last-child { border-right: none; }
+.status-bar .step.active { background: #fff; color: #0d0d0d; }
+.status-bar .step:hover:not(.active) { background: rgba(255,255,255,0.08); color: #fff; }
+
+.titulo-field { margin-bottom: 20px; }
+.titulo-field input { width: 100%; background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.18); color: #fff; font-size: 22px; font-weight: 600; padding: 8px 0; outline: none; transition: border-color 0.2s; }
+.titulo-field input:focus { border-bottom-color: #fff; }
+.titulo-field input::placeholder { color: rgba(255,255,255,0.28); }
+
+.form-body { display: grid; grid-template-columns: 1fr 280px; gap: 24px; }
+
+.field-group { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.field-group label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.45); margin-bottom: 8px; }
+.field-group textarea { width: 100%; background: transparent; border: none; color: #fff; font-size: 14px; resize: vertical; min-height: 100px; outline: none; font-family: inherit; }
+.field-group textarea::placeholder { color: rgba(255,255,255,0.22); }
+
+.sidebar-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.sidebar-field { margin-bottom: 16px; }
+.sidebar-field:last-child { margin-bottom: 0; }
+.sidebar-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.45); margin-bottom: 6px; }
+.sidebar-field select, .sidebar-field input[type="date"], .sidebar-field input[type="text"] { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.2s; }
+.sidebar-field select:focus, .sidebar-field input:focus { border-color: rgba(255,255,255,0.55); }
+.sidebar-field select option { background: #1a2035; }
+.sidebar-field input[disabled] { opacity: 0.6; }
+
+.form-actions { display: flex; gap: 12px; margin-top: 8px; }
+.btn-save { padding: 10px 28px; background: #fff; border: none; border-radius: 8px; color: #0d0d0d; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+.btn-save:hover { opacity: 0.88; }
+.btn-cancel { padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: background 0.2s; }
+.btn-cancel:hover { background: rgba(255,255,255,0.10); }
+
+.errores { background: rgba(248,113,113,0.1); border: 1px solid #f87171; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; color: #f87171; font-size: 13px; }
+.field-error { color: #f87171; font-size: 12px; margin-top: 4px; }
+
+@media (max-width: 768px) {
+    .form-body { grid-template-columns: 1fr; }
+    .status-bar .step { padding: 7px 10px; font-size: 11px; }
+}
+</style>{% endblock %}
+
+{% block contenido %}
+<form method="post" id="form-tarea">
+{% csrf_token %}
+<input type="hidden" name="estado" id="estado-hidden" value="{{ form.estado.value|default:'relevamiento' }}">
+
+{% if form.errors %}
+<div class="errores">
+    {% for field, errors in form.errors.items %}
+        {% for error in errors %}<div>{{ field }}: {{ error }}</div>{% endfor %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="form-header">
+    <h2>Nueva Tarea</h2>
+    <div class="status-bar" id="status-bar">
+        <div class="step {% if form.estado.value == 'relevamiento' or not form.estado.value %}active{% endif %}" data-estado="relevamiento">Relevamiento</div>
+        <div class="step {% if form.estado.value == 'analisis' %}active{% endif %}" data-estado="analisis">Análisis y Dev</div>
+        <div class="step {% if form.estado.value == 'test' %}active{% endif %}" data-estado="test">Test</div>
+        <div class="step {% if form.estado.value == 'terminado' %}active{% endif %}" data-estado="terminado">Terminado</div>
+    </div>
+</div>
+
+<div class="titulo-field">
+    <input type="text" name="titulo" placeholder="Título de la tarea..." value="{{ form.titulo.value|default:'' }}" required autofocus>
+    {% if form.titulo.errors %}<div class="field-error">{{ form.titulo.errors.0 }}</div>{% endif %}
+</div>
+
+<div class="form-body">
+    <div class="col-main">
+        <div class="field-group">
+            <label>Descripción</label>
+            <textarea name="descripcion" placeholder="Describí la tarea...">{{ form.descripcion.value|default:'' }}</textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-save">Guardar</button>
+            <a href="{% url 'dashboard' %}" class="btn-cancel">Cancelar</a>
+        </div>
+    </div>
+
+    <div class="col-sidebar">
+        <div class="sidebar-card">
+            <div class="sidebar-field">
+                <label>Proyecto</label>
+                {% if proyecto_fijo %}
+                    {# Proyecto fijado: queda preseleccionado y no se puede cambiar #}
+                    <input type="hidden" name="proyecto" value="{{ proyecto_fijo.pk }}">
+                    <input type="hidden" name="proyecto_fijo_id" value="{{ proyecto_fijo.pk }}">
+                    <input type="text" value="{{ proyecto_fijo.nombre }}" disabled>
+                {% else %}
+                    <select name="proyecto" required>
+                        <option value="">— Seleccioná —</option>
+                        {% for p in proyectos %}
+                        <option value="{{ p.pk }}" {% if form.proyecto.value|stringformat:"s" == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+                {% if form.proyecto.errors %}<div class="field-error">{{ form.proyecto.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="sidebar-field">
+                <label>Categoría</label>
+                <select name="categoria">
+                    {% for val, label in categorias %}
+                    <option value="{{ val }}" {% if form.categoria.value == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="sidebar-field">
+                <label>Responsable</label>
+                <select name="responsable">
+                    <option value="">Sin asignar</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.pk }}" {% if form.responsable.value|stringformat:"s" == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="sidebar-card">
+            <div class="sidebar-field">
+                <label>Fecha inicio</label>
+                <input type="date" name="fecha_inicio" value="{{ form.fecha_inicio.value|default:'' }}">
+            </div>
+            <div class="sidebar-field">
+                <label>Fecha límite</label>
+                <input type="date" name="fecha_limite" value="{{ form.fecha_limite.value|default:'' }}">
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+
+<script>
+document.querySelectorAll('#status-bar .step').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('#status-bar .step').forEach(s => s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('estado-hidden').value = this.dataset.estado;
+    });
+});
+</script>
+{% endblock %}

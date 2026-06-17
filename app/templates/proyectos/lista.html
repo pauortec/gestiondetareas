@@ -1,15 +1,60 @@
 {% extends 'base.html' %}
 {% block title %}Proyectos{% endblock %}
 
+{% block estilos %}<style>
+.toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.filtros { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+.filtros input, .filtros select {
+    padding: 7px 10px; background: #0d0d0d; color: #fff;
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; font-size: 13px;
+}
+.filtros button {
+    padding: 8px 14px; background: #fff; color: #0d0d0d; border: 0; border-radius: 6px;
+    cursor: pointer; font-weight: 600; font-size: 13px;
+}
+.filtros .limpiar {
+    padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+    text-decoration: none; font-size: 13px;
+}
+.tag-etapa { display: inline-block; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.10); color: #fff; font-size: 11px; }
+.link-blanco { color: #fff; font-weight: 600; }
+.btn-fila { display: inline-block; padding: 5px 12px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.22); border-radius: 5px; color: #fff; font-size: 12px; font-weight: 600; text-decoration: none; }
+.btn-fila:hover { background: rgba(255,255,255,0.18); }
+</style>{% endblock %}
+
 {% block contenido %}
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+<div class="toolbar">
     <h2 style="margin:0;">Proyectos</h2>
-    <a href="{% url 'kanban_proyectos' %}" style="color:rgba(255,255,255,0.6); font-size:13px; text-decoration:none;">Ver como kanban</a>
+    <a href="{% url 'crear_proyecto' %}" class="btn-primario">+ Nuevo proyecto</a>
 </div>
+
+<div class="view-toggle">
+    <a href="{% url 'kanban_proyectos' %}" title="Kanban">
+        <svg viewBox="0 0 24 24"><path d="M3 4h6v16H3zM10 4h4v10h-4zM15 4h6v7h-6z"/></svg>
+    </a>
+    <a href="{% url 'lista_proyectos' %}" class="active" title="Lista">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/></svg>
+    </a>
+</div>
+
+<form method="get" class="filtros">
+    <input type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar proyecto...">
+    <select name="etapa">
+        <option value="">Etapa (todas)</option>
+        {% for codigo, label in etapas %}
+        <option value="{{ codigo }}" {% if filtros.etapa == codigo %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+    <a class="limpiar" href="{% url 'lista_proyectos' %}">Limpiar</a>
+</form>
+
 <table>
     <thead>
         <tr>
             <th>Nombre</th>
+            <th>Etapa</th>
             <th>Propietario</th>
             <th>Tareas</th>
             <th>Creado</th>
@@ -20,17 +65,19 @@
         {% for p in proyectos %}
         <tr>
             <td>{{ p.nombre }}</td>
+            <td><span class="tag-etapa">{{ p.get_etapa_display }}</span></td>
             <td>{{ p.propietario.username }}</td>
             <td>{{ p.num_tareas }}</td>
             <td>{{ p.creado_en|date:"d/m/Y" }}</td>
             <td>
+                <a href="{% url 'crear_tarea' %}?proyecto={{ p.pk }}" class="btn-fila">Nuevo</a>
                 {% if p.propietario == request.user %}
-                <a href="{% url 'compartir_proyecto' p.pk %}" style="color:#38bdf8;">Compartir</a>
+                &nbsp;<a href="{% url 'compartir_proyecto' p.pk %}" class="link-blanco">Compartir</a>
                 {% endif %}
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="vacio">No tenés proyectos todavía.</td></tr>
+        <tr><td colspan="6" class="vacio">No hay proyectos que coincidan con los filtros.</td></tr>
         {% endfor %}
     </tbody>
 </table>
