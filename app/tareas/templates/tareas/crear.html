@@ -3,43 +3,43 @@
 
 {% block estilos %}<style>
 .form-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-.form-header h2 { font-size: 20px; font-weight: 600; }
+.form-header h2 { font-size: 20px; font-weight: 600; color: #111827; }
 
-.status-bar { display: flex; gap: 0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 8px; overflow: hidden; }
-.status-bar .step { padding: 8px 18px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.45); cursor: pointer; border-right: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; white-space: nowrap; }
+.status-bar { display: flex; gap: 0; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+.status-bar .step { padding: 8px 18px; font-size: 12px; font-weight: 600; color: #9ca3af; cursor: pointer; border-right: 1px solid #e5e7eb; transition: all 0.2s; white-space: nowrap; }
 .status-bar .step:last-child { border-right: none; }
-.status-bar .step.active { background: #fff; color: #0d0d0d; }
-.status-bar .step:hover:not(.active) { background: rgba(255,255,255,0.08); color: #fff; }
+.status-bar .step.active { background: #111827; color: #fff; }
+.status-bar .step:hover:not(.active) { background: #f3f4f6; color: #374151; }
 
 .titulo-field { margin-bottom: 20px; }
-.titulo-field input { width: 100%; background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.18); color: #fff; font-size: 22px; font-weight: 600; padding: 8px 0; outline: none; transition: border-color 0.2s; }
-.titulo-field input:focus { border-bottom-color: #fff; }
-.titulo-field input::placeholder { color: rgba(255,255,255,0.28); }
+.titulo-field input { width: 100%; background: transparent; border: none; border-bottom: 2px solid #e5e7eb; color: #111827; font-size: 22px; font-weight: 600; padding: 8px 0; outline: none; transition: border-color 0.2s; }
+.titulo-field input:focus { border-bottom-color: #374151; }
+.titulo-field input::placeholder { color: #9ca3af; }
 
 .form-body { display: grid; grid-template-columns: 1fr 280px; gap: 24px; }
 
-.field-group { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
-.field-group label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.45); margin-bottom: 8px; }
-.field-group textarea { width: 100%; background: transparent; border: none; color: #fff; font-size: 14px; resize: vertical; min-height: 100px; outline: none; font-family: inherit; }
-.field-group textarea::placeholder { color: rgba(255,255,255,0.22); }
+.field-group { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.field-group label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #6b7280; margin-bottom: 8px; }
+.field-group textarea { width: 100%; background: transparent; border: none; color: #111827; font-size: 14px; resize: vertical; min-height: 100px; outline: none; font-family: inherit; }
+.field-group textarea::placeholder { color: #9ca3af; }
 
-.sidebar-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.sidebar-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
 .sidebar-field { margin-bottom: 16px; }
 .sidebar-field:last-child { margin-bottom: 0; }
-.sidebar-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.45); margin-bottom: 6px; }
-.sidebar-field select, .sidebar-field input[type="date"], .sidebar-field input[type="text"] { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.2s; }
-.sidebar-field select:focus, .sidebar-field input:focus { border-color: rgba(255,255,255,0.55); }
-.sidebar-field select option { background: #1a2035; }
-.sidebar-field input[disabled] { opacity: 0.6; }
+.sidebar-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #6b7280; margin-bottom: 6px; }
+.sidebar-field select, .sidebar-field input[type="date"], .sidebar-field input[type="text"] { width: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; color: #111827; font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.2s; }
+.sidebar-field select:focus, .sidebar-field input:focus { border-color: #6b7280; }
+.sidebar-field select option { background: #fff; color: #111827; }
+.sidebar-field input[disabled] { background: #f9fafb; color: #6b7280; }
 
 .form-actions { display: flex; gap: 12px; margin-top: 8px; }
-.btn-save { padding: 10px 28px; background: #fff; border: none; border-radius: 8px; color: #0d0d0d; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-.btn-save:hover { opacity: 0.88; }
-.btn-cancel { padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: background 0.2s; }
-.btn-cancel:hover { background: rgba(255,255,255,0.10); }
+.btn-save { padding: 10px 28px; background: #111827; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-save:hover { background: #374151; }
+.btn-cancel { padding: 10px 20px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; color: #6b7280; font-size: 14px; text-decoration: none; }
+.btn-cancel:hover { background: #f9fafb; }
 
-.errores { background: rgba(248,113,113,0.1); border: 1px solid #f87171; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; color: #f87171; font-size: 13px; }
-.field-error { color: #f87171; font-size: 12px; margin-top: 4px; }
+.errores { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; color: #dc2626; font-size: 13px; }
+.field-error { color: #dc2626; font-size: 12px; margin-top: 4px; }
 
 @media (max-width: 768px) {
     .form-body { grid-template-columns: 1fr; }
@@ -92,7 +92,6 @@
             <div class="sidebar-field">
                 <label>Proyecto</label>
                 {% if proyecto_fijo %}
-                    {# Proyecto fijado: queda preseleccionado y no se puede cambiar #}
                     <input type="hidden" name="proyecto" value="{{ proyecto_fijo.pk }}">
                     <input type="hidden" name="proyecto_fijo_id" value="{{ proyecto_fijo.pk }}">
                     <input type="text" value="{{ proyecto_fijo.nombre }}" disabled>
