@@ -3,3 +3,4 @@ psycopg2-binary
 channels>=4.1
 channels-redis>=4.2
 daphne>=4.1
+djangorestframework>=3.15
