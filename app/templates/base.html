@@ -54,17 +54,38 @@
         .view-toggle a.active { background: #374151; color: #fff; }
         .view-toggle svg { width: 16px; height: 16px; fill: currentColor; }
 
-        .toast-notif {
-            position: fixed; top: 80px; right: 24px;
-            background: #111827; color: #fff;
-            padding: 12px 18px; border-radius: 8px;
-            font-size: 13px; font-weight: 600;
-            opacity: 0; transform: translateX(20px);
-            transition: opacity 0.3s, transform 0.3s;
-            z-index: 1000; max-width: 320px;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+        /* Popup de notificacion estilo WhatsApp — cae desde arriba al centro */
+        .notif-popup {
+            position: fixed; top: 80px;
+            left: 50%; transform: translateX(-50%) translateY(-180px);
+            width: 340px; background: #1f2937; color: #fff;
+            border-radius: 14px; padding: 14px 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
         }
-        .toast-notif.visible { opacity: 1; transform: translateX(0); }
+        .notif-popup.visible { transform: translateX(-50%) translateY(0); }
+        .notif-popup-header {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 6px;
+        }
+        .notif-popup-logo {
+            font-size: 12px; font-weight: 700; color: #f9fafb;
+            background: #374151; padding: 2px 7px; border-radius: 6px;
+        }
+        .notif-popup-tiempo { font-size: 11px; color: #9ca3af; margin-left: auto; }
+        .notif-popup-cerrar {
+            background: none; border: none; color: #9ca3af;
+            font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1;
+        }
+        .notif-popup-cerrar:hover { color: #fff; }
+        .notif-popup-msg { font-size: 13px; line-height: 1.45; color: #e5e7eb; }
+        .notif-popup-link {
+            display: inline-block; margin-top: 8px;
+            font-size: 12px; color: #60a5fa; text-decoration: none;
+        }
+        .notif-popup-link:hover { text-decoration: underline; }
 
         .msg-success {
             background: #f0fdf4;
@@ -75,6 +96,42 @@
             color: #15803d;
             font-size: 13px;
         }
+
+        /* Campana de notificaciones */
+        .notif-wrap { position: relative; }
+        .btn-campana {
+            background: none; border: none; cursor: pointer;
+            padding: 6px 8px; border-radius: 8px; color: #4b5563;
+            position: relative; display: flex; align-items: center;
+        }
+        .btn-campana:hover { background: #f3f4f6; color: #111827; }
+        .btn-campana svg { width: 20px; height: 20px; }
+        .notif-badge {
+            position: absolute; top: 2px; right: 2px;
+            background: #ef4444; color: #fff;
+            font-size: 10px; font-weight: 700;
+            min-width: 16px; height: 16px;
+            border-radius: 8px; padding: 0 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .notif-panel {
+            position: absolute; right: 0; top: calc(100% + 8px);
+            width: 340px; background: #fff;
+            border: 1px solid #e5e7eb; border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            z-index: 999; overflow: hidden;
+        }
+        .notif-panel-header {
+            padding: 12px 16px; font-weight: 600; font-size: 14px;
+            border-bottom: 1px solid #e5e7eb; color: #111827;
+        }
+        .notif-item {
+            display: block; padding: 12px 16px; text-decoration: none;
+            border-bottom: 1px solid #f3f4f6; color: #111827; font-size: 13px; line-height: 1.45;
+        }
+        .notif-item:hover { background: #f9fafb; }
+        .notif-item-hora { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+        .notif-vacio { padding: 20px 16px; font-size: 13px; color: #9ca3af; text-align: center; }
 
         /* Botones genericos */
         .btn-primario {
@@ -102,6 +159,24 @@
             <a href="{% url 'kanban_proyectos' %}">Proyectos</a>
             <a href="{% url 'kanban_tareas' %}">Tareas</a>
         </div>
+        {% if user.is_authenticated %}
+        <div class="notif-wrap" id="notifWrap">
+            <button class="btn-campana" id="btnCampana">
+                <!-- icono campana -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+            </button>
+            <div class="notif-panel" id="notifPanel" style="display:none">
+                <div class="notif-panel-header">Notificaciones</div>
+                <div id="notifLista">
+                    <p class="notif-vacio">Cargando...</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         <a class="btn-logout" href="{% url 'logout' %}">Salir</a>
     </nav>
     <div class="container">
@@ -115,25 +190,158 @@
 
     {% if user.is_authenticated %}
     <script>
-    (function () {
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        const ws = new WebSocket(`${proto}://${location.host}/ws/notificaciones/`);
-        ws.onmessage = function (e) {
-            const msg = JSON.parse(e.data);
-            mostrarToast(msg.mensaje || 'Tenes una notificacion nueva');
-        };
-        function mostrarToast(texto) {
-            const div = document.createElement('div');
-            div.className = 'toast-notif';
-            div.textContent = texto;
-            document.body.appendChild(div);
-            setTimeout(() => div.classList.add('visible'), 10);
-            setTimeout(() => {
-                div.classList.remove('visible');
-                setTimeout(() => div.remove(), 300);
-            }, 5000);
+    // --- Campana de notificaciones ---
+
+    // sessionStorage guarda los PKs vistos entre navegaciones del mismo tab.
+    // 'gt_init' indica si ya hicimos al menos una carga (para no mostrar notifs viejas al abrir la app).
+    const GT_PKS  = 'gt_notif_pks';
+    const GT_INIT = 'gt_notif_init';
+    let pksCargados  = new Set(JSON.parse(sessionStorage.getItem(GT_PKS) || '[]'));
+    let inicializado = sessionStorage.getItem(GT_INIT) === '1';
+
+    // Actualiza el numero rojo sobre la campana
+    function actualizarBadge(total) {
+        const badge = document.getElementById('notifBadge');
+        if (!badge) return;
+        if (total > 0) {
+            badge.textContent = total > 99 ? '99+' : total;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
         }
-    })();
+    }
+
+    // Pide las notificaciones no leidas al servidor, actualiza la lista y detecta nuevas
+    function cargarNotificaciones() {
+        fetch('/notificaciones/')
+            .then(r => r.json())
+            .then(data => {
+                actualizarBadge(data.total);
+
+                // Dibuja la lista dentro del panel
+                const lista = document.getElementById('notifLista');
+                if (lista) {
+                    if (data.notificaciones.length === 0) {
+                        lista.innerHTML = '<p class="notif-vacio">No tenés notificaciones pendientes</p>';
+                    } else {
+                        lista.innerHTML = data.notificaciones.map(n => {
+                            const url = n.tarea_pk ? `/notificaciones/${n.pk}/leer/` : '#';
+                            return `<a class="notif-item" href="${url}">
+                                <div>${n.mensaje}</div>
+                                <div class="notif-item-hora">${n.hora}</div>
+                            </a>`;
+                        }).join('');
+                    }
+                }
+
+                const pksActuales = new Set(data.notificaciones.map(n => n.pk));
+
+                if (inicializado) {
+                    // Mostrar popup para PKs que no habiamos visto en este tab
+                    data.notificaciones
+                        .filter(n => !pksCargados.has(n.pk))
+                        .forEach(n => mostrarPopup(n));
+                }
+
+                // Guardar PKs actuales y marcar que ya se hizo la primera carga
+                pksCargados = pksActuales;
+                sessionStorage.setItem(GT_PKS, JSON.stringify([...pksCargados]));
+                if (!inicializado) {
+                    inicializado = true;
+                    sessionStorage.setItem(GT_INIT, '1');
+                }
+            });
+    }
+
+    // Abre o cierra el panel al hacer click en la campana
+    const btnCampana = document.getElementById('btnCampana');
+    const notifPanel = document.getElementById('notifPanel');
+    if (btnCampana) {
+        btnCampana.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const abierto = notifPanel.style.display !== 'none';
+            if (abierto) {
+                notifPanel.style.display = 'none';
+            } else {
+                notifPanel.style.display = 'block';
+                cargarNotificaciones();
+            }
+        });
+    }
+
+    // Cierra el panel si el usuario hace click fuera de el
+    document.addEventListener('click', function (e) {
+        const wrap = document.getElementById('notifWrap');
+        if (wrap && !wrap.contains(e.target)) {
+            notifPanel.style.display = 'none';
+        }
+    });
+
+    // Carga inicial al abrir la pagina
+    cargarNotificaciones();
+
+    // Polling cada 10 segundos: respaldo por si el WebSocket no esta disponible
+    setInterval(cargarNotificaciones, 10000);
+
+    // --- Toast + WebSocket en tiempo real ---
+
+    // Muestra el popup estilo WhatsApp con la notificacion recibida
+    function mostrarPopup(notif) {
+        const popup = document.createElement('div');
+        popup.className = 'notif-popup';
+
+        const url = notif.tarea_pk ? `/notificaciones/${notif.pk}/leer/` : '#';
+
+        popup.innerHTML = `
+            <div class="notif-popup-header">
+                <span class="notif-popup-logo">GestiTask</span>
+                <span class="notif-popup-tiempo">Ahora mismo</span>
+                <button class="notif-popup-cerrar" title="Cerrar">×</button>
+            </div>
+            <div class="notif-popup-msg">${notif.mensaje}</div>
+            ${notif.tarea_pk ? `<a class="notif-popup-link" href="${url}">Ver tarea →</a>` : ''}
+        `;
+
+        // Cerrar al hacer click en la X
+        popup.querySelector('.notif-popup-cerrar').addEventListener('click', (e) => {
+            e.stopPropagation();
+            cerrarPopup(popup);
+        });
+
+        // Cerrar y navegar al hacer click en el popup
+        popup.addEventListener('click', () => {
+            cerrarPopup(popup);
+            if (notif.tarea_pk) window.location.href = url;
+        });
+
+        document.body.appendChild(popup);
+        // Espera un frame para que la transicion CSS funcione
+        requestAnimationFrame(() => popup.classList.add('visible'));
+
+        // Se cierra solo despues de 6 segundos
+        setTimeout(() => cerrarPopup(popup), 6000);
+    }
+
+    function cerrarPopup(popup) {
+        popup.classList.remove('visible');
+        setTimeout(() => popup.remove(), 350);
+    }
+
+    // WebSocket: escucha notificaciones en tiempo real
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${proto}://${location.host}/ws/notificaciones/`);
+    ws.onmessage = function (e) {
+        const msg = JSON.parse(e.data);
+        mostrarPopup(msg);
+        // Registrar el PK en sessionStorage para que el polling no lo duplique
+        if (msg.pk) {
+            pksCargados.add(msg.pk);
+            sessionStorage.setItem(GT_PKS, JSON.stringify([...pksCargados]));
+        }
+        const badge = document.getElementById('notifBadge');
+        const actual = badge && badge.style.display !== 'none' ? parseInt(badge.textContent) || 0 : 0;
+        actualizarBadge(actual + 1);
+    };
     </script>
     {% endif %}
 </body>

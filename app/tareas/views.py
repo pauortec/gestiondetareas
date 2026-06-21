@@ -1,5 +1,3 @@
-import json
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -8,14 +6,19 @@ from django.core import validators
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 
 from django.contrib.auth.models import User
 
 from .accesos import proyectos_de, tareas_de, puede_ver_tarea, puede_ver_proyecto
-from .models import Tarea, Proyecto, ESTADOS, CATEGORIAS, ETAPAS_PROYECTO
+from .models import Tarea, Proyecto, Notificacion, ESTADOS, CATEGORIAS, ETAPAS_PROYECTO
 from .forms import TareaForm, PartesHorasFormSet
+from .serializers import NotificacionSerializer, MoverTareaSerializer
 
 ESTADOS_VALIDOS = {codigo for codigo, _ in ESTADOS}
 
@@ -53,7 +56,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('dashboard')
+            return redirect('kanban_proyectos')
     else:
         form = AuthenticationForm()
     # Traducimos las labels nativas a espanol
@@ -95,11 +98,19 @@ def lista_proyectos(request):
 
 @login_required
 def kanban_proyectos(request):
-    proyectos, filtros = _proyectos_filtrados(request)
+    qs = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
+    filtros = {'q': request.GET.get('q', '').strip()}
+    if filtros['q']:
+        qs = qs.filter(nombre__icontains=filtros['q'])
+    proyectos_lista = list(qs)
+    indice = {codigo: [] for codigo, _ in ETAPAS_PROYECTO}
+    for p in proyectos_lista:
+        if p.etapa in indice:
+            indice[p.etapa].append(p)
+    columnas = [{'codigo': c, 'label': l, 'proyectos': indice[c]} for c, l in ETAPAS_PROYECTO]
     return render(request, 'proyectos/kanban.html', {
-        'proyectos': proyectos,
+        'columnas': columnas,
         'filtros': filtros,
-        'etapas': ETAPAS_PROYECTO,
     })
 
 @login_required
@@ -224,31 +235,34 @@ def asignar_tarea(request, pk):
     candidatos = User.objects.order_by('username')
     return render(request, 'tareas/asignar.html', {'tarea': tarea, 'candidatos': candidatos})
 
-@login_required
-@require_POST
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def mover_tarea(request):
-    datos = json.loads(request.body)
-    tarea = get_object_or_404(Tarea, pk=datos.get('tarea_id'))
+    serializer = MoverTareaSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response({'ok': False, 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    datos = serializer.validated_data
+    tarea = get_object_or_404(Tarea, pk=datos['tarea_id'])
     if not puede_ver_tarea(request.user, tarea):
-        return JsonResponse({'ok': False, 'error': 'sin permiso'}, status=403)
-    estado = datos.get('estado')
-    if estado not in ESTADOS_VALIDOS:
-        return JsonResponse({'ok': False, 'error': 'estado invalido'}, status=400)
-    tarea.estado = estado
+        return Response({'ok': False, 'error': 'sin permiso'}, status=status.HTTP_403_FORBIDDEN)
+    if datos['estado'] not in ESTADOS_VALIDOS:
+        return Response({'ok': False, 'error': 'estado invalido'}, status=status.HTTP_400_BAD_REQUEST)
+    tarea.estado = datos['estado']
     tarea.save(update_fields=['estado'])
-    for posicion, tid in enumerate(datos.get('orden', [])):
+    for posicion, tid in enumerate(datos['orden']):
         Tarea.objects.filter(pk=tid).update(posicion=posicion)
-    return JsonResponse({'ok': True})
+    return Response({'ok': True})
 
 @login_required
 def crear_proyecto(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
+        etapa = request.POST.get('etapa', 'implementacion')
         if nombre:
-            Proyecto.objects.create(nombre=nombre, propietario=request.user)
+            Proyecto.objects.create(nombre=nombre, etapa=etapa, propietario=request.user)
             messages.success(request, 'Proyecto creado correctamente.')
-            return redirect('dashboard')
-    return render(request, 'proyectos/crear.html')
+            return redirect('kanban_proyectos')
+    return render(request, 'proyectos/crear.html', {'etapas': ETAPAS_PROYECTO})
 
 @login_required
 def crear_tarea(request):
@@ -298,5 +312,23 @@ def eliminar_proyecto(request, pk):
     if request.method == 'POST':
         proyecto.delete()
         messages.success(request, 'Proyecto eliminado.')
-        return redirect('dashboard')
+        return redirect('kanban_proyectos')
     return render(request, 'proyectos/eliminar.html', {'proyecto': proyecto})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def notificaciones_json(request):
+    notifs = request.user.notificaciones.filter(leida=False).select_related('tarea')[:20]
+    serializer = NotificacionSerializer(notifs, many=True)
+    return Response({'notificaciones': serializer.data, 'total': len(serializer.data)})
+
+
+@login_required
+def marcar_notif_leida(request, pk):
+    notif = get_object_or_404(Notificacion, pk=pk, usuario=request.user)
+    notif.leida = True
+    notif.save(update_fields=['leida'])
+    if notif.tarea_id:
+        return redirect('detalle_tarea', pk=notif.tarea_id)
+    return redirect('kanban_proyectos')

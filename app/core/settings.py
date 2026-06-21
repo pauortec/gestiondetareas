@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
-    'tareas',  # ← agrega la app
+    'rest_framework',
+    'tareas',
 ]
 
 MIDDLEWARE = [
