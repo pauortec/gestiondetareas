@@ -89,6 +89,7 @@ class Tarea(models.Model):
         if self.responsable_id and self.responsable_id != responsable_anterior_id:
             notif = Notificacion.objects.create(
                 usuario=self.responsable,
+                tarea=self,
                 mensaje=f"Te asignaron la tarea '{self.titulo}'",
             )
             _broadcast_notificacion(notif)
@@ -130,8 +131,10 @@ def _broadcast_notificacion(notif):
         async_to_sync(layer.group_send)(f'notif_{notif.usuario_id}', {
             'type': 'evento_notif',
             'data': {
+                'pk': notif.pk,
                 'mensaje': notif.mensaje,
-                'creada_en': notif.creada_en.isoformat(),
+                'tarea_pk': notif.tarea_id,
+                'hora': notif.creada_en.strftime('%d/%m %H:%M'),
             },
         })
     except Exception:
@@ -168,6 +171,8 @@ class HistorialTarea(models.Model):
 
 class Notificacion(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notificaciones')
+    # Tarea que origino la notificacion; null si fue eliminada
+    tarea = models.ForeignKey('Tarea', on_delete=models.SET_NULL, null=True, blank=True, related_name='notificaciones')
     mensaje = models.TextField()
     leida = models.BooleanField(default=False)
     creada_en = models.DateTimeField(auto_now_add=True)

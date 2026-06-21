@@ -20,4 +20,6 @@ urlpatterns = [
     path('tareas/crear/', views.crear_tarea, name='crear_tarea'),
     path('tareas/<int:pk>/eliminar/', views.eliminar_tarea, name='eliminar_tarea'),
     path('proyectos/<int:pk>/eliminar/', views.eliminar_proyecto, name='eliminar_proyecto'),
+    path('notificaciones/', views.notificaciones_json, name='notificaciones_json'),
+    path('notificaciones/<int:pk>/leer/', views.marcar_notif_leida, name='marcar_notif_leida'),
 ]
