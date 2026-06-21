@@ -2,61 +2,30 @@
 {% block title %}Proyectos (Kanban){% endblock %}
 
 {% block estilos %}<style>
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-
-/* Buscador centrado */
-.search-shell { max-width: 680px; margin: 0 auto 20px; position: relative; }
-.search-bar {
-    display: flex; align-items: center; gap: 8px;
-    background: #fff; border: 1px solid #d1d5db;
-    border-radius: 8px; padding: 6px 12px;
-    flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+.toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.filtros { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+.filtros input, .filtros select {
+    padding: 7px 10px; background: #0d0d0d; color: #fff;
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; font-size: 13px;
 }
-.search-bar:focus-within { border-color: #6b7280; }
-.search-bar .ico { color: #9ca3af; font-size: 14px; }
-.search-bar input { flex: 1; min-width: 200px; background: transparent; border: 0; color: #111827; font-size: 14px; outline: none; padding: 4px 0; }
-.search-bar input::placeholder { color: #9ca3af; }
-.search-bar .chip {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: #f3f4f6; color: #374151;
-    padding: 3px 10px; border-radius: 14px; font-size: 12px;
-    border: 1px solid #e5e7eb;
+.filtros button {
+    padding: 8px 14px; background: #fff; color: #0d0d0d; border: 0; border-radius: 6px;
+    cursor: pointer; font-weight: 600; font-size: 13px;
 }
-.search-bar .chip a { color: #6b7280; text-decoration: none; font-weight: bold; margin-left: 2px; }
-.search-bar .chip a:hover { color: #111827; }
-.search-dropdown {
-    position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px;
-    background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 8px; padding: 6px 0; z-index: 50;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+.filtros .limpiar {
+    padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+    text-decoration: none; font-size: 13px;
 }
-.search-dropdown a { display: block; padding: 8px 14px; color: #374151; text-decoration: none; font-size: 13px; }
-.search-dropdown a:hover { background: #f9fafb; color: #111827; }
-.search-dropdown b { color: #111827; font-weight: 700; }
-.search-dropdown i { color: #6b7280; font-style: italic; }
-
-/* Tablero de columnas por etapa */
-.tablero-wrapper { overflow-x: auto; }
-.tablero { display: flex; gap: 14px; align-items: flex-start; min-width: max-content; padding-bottom: 12px; }
-.col { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; width: 230px; min-height: 160px; flex-shrink: 0; }
-.col-titulo { font-size: 13px; font-weight: 600; color: #374151; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-.col-titulo .conteo { background: #e5e7eb; color: #374151; border-radius: 10px; padding: 1px 7px; font-size: 11px; }
-.col-vacia { color: #9ca3af; font-size: 12px; text-align: center; padding: 16px 0; }
-
-/* Cards de proyecto */
-.proj-card {
-    display: block; text-decoration: none;
-    background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 8px; padding: 12px;
-    margin-bottom: 8px; color: #111827;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    transition: box-shadow 0.15s, transform 0.15s;
-}
-.proj-card:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.08); transform: translateY(-1px); color: #111827; }
-.proj-card .nombre { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-.proj-card .meta { font-size: 11px; color: #6b7280; }
-.proj-card .num { font-size: 18px; font-weight: 700; color: #111827; margin-top: 8px; }
-.proj-card .num span { font-size: 11px; color: #6b7280; font-weight: 400; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: 10px; padding: 16px; color: #fff; }
+.card h3 { font-size: 16px; margin-bottom: 8px; }
+.card .meta { color: rgba(255,255,255,0.55); font-size: 12px; margin-bottom: 4px; }
+.card .num { color: #fff; font-weight: 700; font-size: 22px; margin: 8px 0 12px; }
+.tag-etapa { display: inline-block; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.10); color: #fff; font-size: 11px; margin-bottom: 8px; }
+.card-actions { display: flex; gap: 8px; margin-top: 6px; }
+.btn-card { padding: 5px 12px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.22); border-radius: 5px; color: #fff; font-size: 12px; font-weight: 600; text-decoration: none; }
+.btn-card:hover { background: rgba(255,255,255,0.18); }
 </style>{% endblock %}
 
 {% block contenido %}
@@ -74,63 +43,35 @@
     </a>
 </div>
 
-{# Buscador centrado #}
-<div class="search-shell">
-    <div class="search-bar">
-        <span class="ico">🔍</span>
-        {% if filtros.q %}<span class="chip">Nombre: "{{ filtros.q }}" <a href="{% url 'kanban_proyectos' %}">×</a></span>{% endif %}
-        <input id="busqueda-proj" type="text" placeholder="Buscar proyectos...">
-    </div>
-    <div class="search-dropdown" id="search-dd-proj" style="display:none;"></div>
-</div>
-
-<script>
-(function() {
-    const input = document.getElementById('busqueda-proj');
-    const dd = document.getElementById('search-dd-proj');
-    function pintar(v) {
-        const enc = encodeURIComponent(v);
-        dd.innerHTML = '<a href="?q=' + enc + '">Buscar <b>Nombre</b> para: <i>' + v + '</i></a>';
-        dd.style.display = 'block';
-    }
-    input.addEventListener('input', () => {
-        const v = input.value.trim();
-        if (!v) { dd.style.display = 'none'; return; }
-        pintar(v);
-    });
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const v = input.value.trim();
-            if (v) window.location = '?q=' + encodeURIComponent(v);
-        }
-    });
-    document.addEventListener('click', e => {
-        if (!e.target.closest('.search-shell')) dd.style.display = 'none';
-    });
-})();
-</script>
-
-{# Kanban: una columna por etapa del proyecto #}
-<div class="tablero-wrapper">
-    <div class="tablero">
-        {% for col in columnas %}
-        <div class="col">
-            <div class="col-titulo">
-                <span>{{ col.label }}</span>
-                <span class="conteo">{{ col.proyectos|length }}</span>
-            </div>
-            {% for p in col.proyectos %}
-            <a href="{% url 'kanban_tareas' %}?proyecto={{ p.pk }}" class="proj-card">
-                <div class="nombre">{{ p.nombre }}</div>
-                <div class="meta">{{ p.propietario.username }}</div>
-                <div class="num">{{ p.num_tareas }} <span>tarea{{ p.num_tareas|pluralize }}</span></div>
-            </a>
-            {% empty %}
-            <div class="col-vacia">Sin proyectos</div>
-            {% endfor %}
-        </div>
+<form method="get" class="filtros">
+    <input type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar proyecto...">
+    <select name="etapa">
+        <option value="">Etapa (todas)</option>
+        {% for codigo, label in etapas %}
+        <option value="{{ codigo }}" {% if filtros.etapa == codigo %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+    <a class="limpiar" href="{% url 'kanban_proyectos' %}">Limpiar</a>
+</form>
+
+<div class="grid">
+    {% for p in proyectos %}
+    <div class="card">
+        <h3>{{ p.nombre }}</h3>
+        <span class="tag-etapa">{{ p.get_etapa_display }}</span>
+        <div class="meta">Propietario: {{ p.propietario.username }}</div>
+        <div class="meta">Creado: {{ p.creado_en|date:"d/m/Y" }}</div>
+        <div class="num">{{ p.num_tareas }}<span style="font-size:12px; color:rgba(255,255,255,0.55);"> tareas</span></div>
+        <div class="card-actions">
+            <a href="{% url 'crear_tarea' %}?proyecto={{ p.pk }}" class="btn-card">Nuevo</a>
+            {% if p.propietario == request.user %}
+            <a href="{% url 'compartir_proyecto' p.pk %}" class="btn-card">Compartir</a>
+            {% endif %}
+        </div>
     </div>
+    {% empty %}
+    <div class="vacio">No hay proyectos que coincidan con los filtros.</div>
+    {% endfor %}
 </div>
 {% endblock %}
