@@ -10,7 +10,7 @@
     <form method="post" style="display:flex; gap:12px;">
         {% csrf_token %}
         <button type="submit" style="padding:10px 24px; background:#ef4444; border:none; border-radius:8px; color:#fff; font-size:14px; font-weight:600; cursor:pointer;">Eliminar</button>
-        <a href="{% url 'dashboard' %}" style="padding:10px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:rgba(255,255,255,0.65); font-size:14px; text-decoration:none;">Cancelar</a>
+        <a href="{% url 'kanban_proyectos' %}" style="padding:10px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:rgba(255,255,255,0.65); font-size:14px; text-decoration:none;">Cancelar</a>
     </form>
 </div>
 {% endblock %}
