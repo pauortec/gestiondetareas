@@ -17,8 +17,8 @@ class NotificacionSerializer(serializers.ModelSerializer):
 
 class MoverTareaSerializer(serializers.Serializer):
     tarea_id = serializers.IntegerField()
-    estado = serializers.CharField(max_length=20)
-    # Lista de IDs en el nuevo orden dentro de la columna
+    proyecto_id = serializers.IntegerField(required=False, default=None, allow_null=True)
+    estado = serializers.CharField(max_length=20, required=False, default='', allow_blank=True)
     orden = serializers.ListField(child=serializers.IntegerField(), required=False, default=list)
 
 

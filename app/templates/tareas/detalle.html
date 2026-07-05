@@ -2,86 +2,120 @@
 {% block title %}{{ tarea.titulo }}{% endblock %}
 
 {% block estilos %}<style>
+/* === barra superior === */
+.tarea-topbar {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px; gap: 12px; flex-wrap: wrap;
+}
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
 .status-bar {
     display: flex; gap: 0;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    background: #f9fafb; border: 1px solid #e5e7eb;
     border-radius: 8px; overflow: hidden;
 }
 .status-bar a {
     padding: 8px 18px; font-size: 12px; font-weight: 600;
     color: #9ca3af; text-decoration: none;
-    border-right: 1px solid #e5e7eb;
-    transition: all 0.2s; white-space: nowrap;
+    border-right: 1px solid #e5e7eb; transition: all 0.2s; white-space: nowrap;
 }
 .status-bar a:last-child { border-right: none; }
 .status-bar a.active { background: #111827; color: #fff; }
 .status-bar a:hover:not(.active) { background: #f3f4f6; color: #374151; }
-.detalle-header {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 8px;
-    flex-wrap: wrap; gap: 12px;
-}
-.detalle-titulo { font-size: 22px; font-weight: 700; margin-bottom: 4px; color: #111827; }
-.detalle-proyecto { font-size: 13px; color: #6b7280; }
-.form-actions { display: flex; gap: 10px; margin-bottom: 24px; margin-top: 16px; align-items: center; }
+
 .btn-save {
-    padding: 9px 24px; background: #111827;
+    padding: 9px 22px; background: #111827;
     border: none; border-radius: 8px; color: #fff;
     font-size: 14px; font-weight: 600; cursor: pointer;
 }
 .btn-save:hover { background: #374151; }
 .btn-back {
-    padding: 9px 18px; background: #fff;
+    padding: 9px 16px; background: #fff;
     border: 1px solid #e5e7eb; border-radius: 8px; color: #374151;
-    font-size: 14px; text-decoration: none;
+    font-size: 14px; text-decoration: none; display: inline-block;
 }
 .btn-back:hover { background: #f9fafb; }
 .btn-delete {
-    padding: 9px 18px; background: #fff;
+    padding: 9px 16px; background: #fff;
     border: 1px solid #fca5a5; border-radius: 8px; color: #dc2626;
-    font-size: 14px; text-decoration: none; margin-left: auto;
+    font-size: 14px; text-decoration: none; display: inline-block;
 }
 .btn-delete:hover { background: #fef2f2; }
-.detalle-body { display: grid; grid-template-columns: 1fr 280px; gap: 24px; margin-bottom: 32px; }
-.card-section {
-    background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 10px; padding: 20px; margin-bottom: 16px;
+
+/* === layout principal (main + chatter) === */
+.detalle-outer {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 0;
+    align-items: start;
 }
-.card-section h4 {
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.6px; color: #9ca3af; margin-bottom: 16px;
+.detalle-main { padding-right: 24px; }
+
+/* === titulo editable === */
+.tarea-titulo-wrap { margin: 14px 0 20px; }
+.tarea-titulo-wrap input[type=text] {
+    font-size: 22px; font-weight: 700; width: 100%;
+    border: none; outline: none; color: #111827;
+    background: transparent; padding: 2px 0;
+    border-bottom: 2px solid transparent; font-family: inherit;
+    transition: border-color 0.15s;
 }
-.field { margin-bottom: 16px; }
-.field:last-child { margin-bottom: 0; }
-.field label {
-    display: block; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.6px;
-    color: #6b7280; margin-bottom: 6px;
+.tarea-titulo-wrap input[type=text]:focus { border-bottom-color: #111827; }
+
+/* === campos dos columnas estilo Odoo === */
+.form-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0 48px; margin-bottom: 28px;
+    border-top: 1px solid #e5e7eb; padding-top: 4px;
 }
-.field input[type=text], .field input[type=date], .field select, .field textarea {
-    width: 100%; padding: 8px 10px;
-    background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 6px; color: #111827; font-size: 13px;
-    font-family: inherit; transition: border-color 0.2s;
+.form-row {
+    display: flex; align-items: center;
+    padding: 8px 4px; border-bottom: 1px solid #f3f4f6; min-height: 38px;
 }
-.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #6b7280; }
-.field select option { background: #fff; color: #111827; }
-.field textarea { resize: vertical; min-height: 100px; }
-.tabs-bottom {
-    border-bottom: 1px solid #e5e7eb;
-    display: flex; gap: 4px; margin-bottom: 20px;
+.form-row:hover { background: #fafafa; }
+.form-row > label {
+    width: 140px; flex-shrink: 0;
+    font-size: 13px; color: #6b7280; font-weight: 400; padding-right: 8px;
 }
-.tabs-bottom input[type=radio] { display: none; }
-.tabs-bottom label {
+.form-row .fv { flex: 1; }
+.form-row .fv input, .form-row .fv select {
+    width: 100%; border: none; outline: none;
+    background: transparent; color: #111827;
+    font-size: 13px; font-family: inherit; padding: 2px 0;
+}
+.form-row .fv input:focus, .form-row .fv select:focus {
+    border: 1px solid #d1d5db; border-radius: 4px;
+    background: #fff; padding: 2px 8px; outline: none;
+}
+.form-row .fv select option { background: #fff; color: #111827; }
+
+/* === tabs === */
+.tabs-bar {
+    display: flex; border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+}
+.tab-btn {
     padding: 10px 18px; cursor: pointer; font-size: 14px;
-    color: #6b7280;
+    color: #6b7280; background: none; border: none;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
+    font-family: inherit; white-space: nowrap;
 }
-.tabs-bottom input[type=radio]:checked + label { color: #111827; border-bottom-color: #111827; }
+.tab-btn:hover { color: #374151; }
+.tab-btn.active { color: #111827; border-bottom-color: #111827; }
 .panel { display: none; }
-#t2:checked ~ #panel-horas { display: block; }
-#t3:checked ~ #panel-historial { display: block; }
+.panel.active { display: block; }
+
+/* descripcion */
+#id_descripcion {
+    width: 100%; min-height: 120px; padding: 10px;
+    border: 1px solid #e5e7eb; border-radius: 6px;
+    font-family: inherit; font-size: 13px; color: #111827;
+    resize: vertical; background: #fff; box-sizing: border-box;
+}
+#id_descripcion:focus { outline: none; border-color: #6b7280; }
+
+/* parte de horas */
 .tabla-horas { width: 100%; border-collapse: collapse; }
 .tabla-horas th, .tabla-horas td {
     padding: 8px 10px; border-bottom: 1px solid #f3f4f6;
@@ -93,74 +127,180 @@
     background: #fff; color: #111827;
     border: 1px solid #e5e7eb; border-radius: 4px; font-size: 12px;
 }
-.historial-item {
-    display: flex; justify-content: space-between;
-    padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;
+.btn-link {
+    background: none; border: none; color: #374151; cursor: pointer;
+    font-size: 13px; padding: 6px 0; text-decoration: underline;
 }
-.historial-item .fecha { color: #9ca3af; font-size: 11px; }
-.vacio { color: #9ca3af; font-size: 13px; padding: 16px 0; }
-@media (max-width: 768px) { .detalle-body { grid-template-columns: 1fr; } }
+.btn-link:hover { color: #111827; }
+
+/* === chatter === */
+.chatter {
+    border-left: 1px solid #e5e7eb;
+    padding-left: 24px;
+    min-height: 200px;
+}
+.chatter-titulo {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: #9ca3af; margin-bottom: 14px;
+}
+.chatter-compose { margin-bottom: 20px; }
+.coment-input {
+    width: 100%; padding: 10px; border: 1px solid #e5e7eb;
+    border-radius: 8px 8px 0 0; font-family: inherit; font-size: 13px;
+    color: #111827; resize: none; background: #fff;
+    border-bottom: none; box-sizing: border-box;
+}
+.coment-input:focus { outline: none; border-color: #6b7280; }
+.compose-bar {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid #e5e7eb; border-top: none;
+    border-radius: 0 0 8px 8px; padding: 8px 10px;
+    background: #f9fafb;
+}
+.btn-enviar {
+    padding: 6px 16px; background: #111827; border: none;
+    border-radius: 6px; color: #fff; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+}
+.btn-enviar:hover { background: #374151; }
+.btn-clip {
+    cursor: pointer; font-size: 18px; line-height: 1;
+    padding: 2px 4px; border-radius: 4px; user-select: none;
+}
+.btn-clip:hover { background: #e5e7eb; }
+.file-compose {
+    border: 1px solid #e5e7eb; border-radius: 6px;
+    padding: 10px; margin-top: 8px; background: #f9fafb;
+}
+.file-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.file-nm { font-size: 12px; color: #374151; flex: 1; word-break: break-all; }
+.btn-cancel {
+    background: none; border: none; color: #9ca3af;
+    cursor: pointer; font-size: 16px; line-height: 1;
+}
+.btn-cancel:hover { color: #374151; }
+
+/* feed del chatter */
+.chatter-feed { display: flex; flex-direction: column; gap: 16px; }
+.ch-item {
+    display: flex; gap: 10px; align-items: flex-start;
+}
+.ch-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #374151; color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.ch-body { flex: 1; min-width: 0; }
+.ch-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.ch-author { font-size: 13px; font-weight: 600; color: #111827; }
+.ch-time { font-size: 11px; color: #9ca3af; }
+.ch-text {
+    font-size: 13px; color: #374151;
+    white-space: pre-wrap; word-break: break-word; margin: 0;
+}
+.ch-file {
+    display: flex; align-items: center; gap: 6px; font-size: 13px;
+}
+.ch-file a { color: #2563eb; text-decoration: none; }
+.ch-file a:hover { text-decoration: underline; }
+.btn-del-arch {
+    background: none; border: none; color: #dc2626;
+    cursor: pointer; font-size: 11px; padding: 0;
+}
+.ch-log {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: #9ca3af; padding: 4px 0;
+    border-top: 1px dashed #f3f4f6; border-bottom: 1px dashed #f3f4f6;
+}
+
+@media (max-width: 900px) {
+    .detalle-outer { grid-template-columns: 1fr; }
+    .detalle-main { padding-right: 0; }
+    .chatter { border-left: none; border-top: 1px solid #e5e7eb; padding-left: 0; padding-top: 24px; margin-top: 24px; }
+    .form-grid { grid-template-columns: 1fr; }
+}
 </style>{% endblock %}
 
 {% block contenido %}
-<form method="post">
+
+<!-- Barra superior -->
+<div class="tarea-topbar">
+    <a href="{% url 'kanban_tareas' %}" class="btn-back">&#8592; Volver</a>
+    <div class="topbar-right">
+        <div class="status-bar">
+            <a href="?set_estado=relevamiento" class="{% if tarea.estado == 'relevamiento' %}active{% endif %}">Relevamiento</a>
+            <a href="?set_estado=analisis" class="{% if tarea.estado == 'analisis' %}active{% endif %}">Analisis y Dev</a>
+            <a href="?set_estado=test" class="{% if tarea.estado == 'test' %}active{% endif %}">Test</a>
+            <a href="?set_estado=terminado" class="{% if tarea.estado == 'terminado' %}active{% endif %}">Terminado</a>
+        </div>
+        <button form="form-tarea" type="submit" class="btn-save">Guardar</button>
+        <a href="{% url 'eliminar_tarea' tarea.pk %}" class="btn-delete">Eliminar</a>
+    </div>
+</div>
+
+<div class="detalle-outer">
+
+<!-- ===== MAIN ===== -->
+<div class="detalle-main">
+<form id="form-tarea" method="post">
 {% csrf_token %}
 
-<div class="detalle-header">
-    <div>
-        <div class="detalle-titulo">{{ tarea.titulo }}</div>
-        <div class="detalle-proyecto">{{ tarea.proyecto.nombre }}</div>
-    </div>
-    <div class="status-bar">
-        <a href="?set_estado=relevamiento" class="{% if tarea.estado == 'relevamiento' %}active{% endif %}">Relevamiento</a>
-        <a href="?set_estado=analisis" class="{% if tarea.estado == 'analisis' %}active{% endif %}">Análisis y Dev</a>
-        <a href="?set_estado=test" class="{% if tarea.estado == 'test' %}active{% endif %}">Test</a>
-        <a href="?set_estado=terminado" class="{% if tarea.estado == 'terminado' %}active{% endif %}">Terminado</a>
-    </div>
-</div>
+<div class="tarea-titulo-wrap">{{ form.titulo }}</div>
 
-<div class="form-actions">
-    <button type="submit" class="btn-save">Guardar</button>
-    <a href="{% url 'kanban_tareas' %}" class="btn-back">Volver</a>
-    <a href="{% url 'eliminar_tarea' tarea.pk %}" class="btn-delete">Eliminar</a>
-</div>
-
-<div class="detalle-body">
+<div class="form-grid">
     <div>
-        <div class="card-section">
-            <h4>Información general</h4>
-            <div class="field"><label>Título</label>{{ form.titulo }}</div>
-            <div class="field"><label>Descripción</label>{{ form.descripcion }}</div>
+        <div class="form-row">
+            <label>Proyecto</label>
+            <div class="fv">{{ form.proyecto }}</div>
+        </div>
+        <div class="form-row">
+            <label>Responsable</label>
+            <div class="fv">{{ form.responsable }}</div>
+        </div>
+        <div class="form-row">
+            <label>Estado</label>
+            <div class="fv">{{ form.estado }}</div>
         </div>
     </div>
     <div>
-        <div class="card-section">
-            <div class="field"><label>Proyecto</label>{{ form.proyecto }}</div>
-            <div class="field"><label>Responsable</label>{{ form.responsable }}</div>
-            <div class="field"><label>Categoría</label>{{ form.categoria }}</div>
-            <div class="field"><label>Estado</label>{{ form.estado }}</div>
+        <div class="form-row">
+            <label>Categoria</label>
+            <div class="fv">{{ form.categoria }}</div>
         </div>
-        <div class="card-section">
-            <div class="field"><label>Fecha inicio</label>{{ form.fecha_inicio }}</div>
-            <div class="field"><label>Fecha límite</label>{{ form.fecha_limite }}</div>
+        <div class="form-row">
+            <label>Fecha inicio</label>
+            <div class="fv">{{ form.fecha_inicio }}</div>
+        </div>
+        <div class="form-row">
+            <label>Fecha limite</label>
+            <div class="fv">{{ form.fecha_limite }}</div>
         </div>
     </div>
 </div>
 
-<div class="tabs-bottom">
-    <input type="radio" name="tab" id="t2">
-    <label for="t2">Parte de horas</label>
-    <input type="radio" name="tab" id="t3">
-    <label for="t3">Historial</label>
+<!-- Tabs -->
+<div class="tabs-bar">
+    <button type="button" class="tab-btn active" data-target="panel-desc">Descripcion</button>
+    <button type="button" class="tab-btn" data-target="panel-horas">Parte de horas</button>
 </div>
 
+<!-- Panel: Descripcion -->
+<div id="panel-desc" class="panel active">
+    {{ form.descripcion }}
+    <button type="submit" class="btn-save" style="margin-top:14px;">Guardar</button>
+</div>
+
+<!-- Panel: Parte de horas -->
 <div id="panel-horas" class="panel">
     {{ formset.management_form }}
     <table class="tabla-horas">
         <thead>
-            <tr><th>Fecha</th><th>Descripción</th><th>Horas</th><th>Categoría</th><th>Borrar</th></tr>
+            <tr><th>Fecha</th><th>Descripcion</th><th>Horas</th><th>Categoria</th><th>Borrar</th></tr>
         </thead>
-        <tbody>
+        <tbody id="tbody-horas">
             {% for f in formset %}
             <tr>
                 {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
@@ -173,21 +313,151 @@
             {% endfor %}
         </tbody>
     </table>
-    <div style="margin-top:14px;">
+    <!-- Fila vacia para clonar al agregar -->
+    <template id="empty-hora-tpl">
+        <tr>
+            {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+            <td>{{ formset.empty_form.fecha }}</td>
+            <td>{{ formset.empty_form.descripcion }}</td>
+            <td>{{ formset.empty_form.horas }}</td>
+            <td>{{ formset.empty_form.categoria }}</td>
+            <td>{{ formset.empty_form.DELETE }}</td>
+        </tr>
+    </template>
+    <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <button type="button" class="btn-link" id="btn-add-hora">+ Agregar fila</button>
         <button type="submit" class="btn-save">Guardar horas</button>
     </div>
 </div>
 
-<div id="panel-historial" class="panel">
-    {% for h in historial %}
-    <div class="historial-item">
-        <span>{{ h.evento }}</span>
-        <span class="fecha">{{ h.creado_en|date:"d/m/Y H:i" }}</span>
-    </div>
-    {% empty %}
-    <div class="vacio">Sin cambios registrados.</div>
-    {% endfor %}
-</div>
-
 </form>
+</div><!-- /detalle-main -->
+
+<!-- ===== CHATTER ===== -->
+<div class="chatter">
+    <div class="chatter-titulo">Actividad</div>
+
+    <!-- Compose: comentario -->
+    <div class="chatter-compose">
+        <form method="post" action="{% url 'agregar_comentario' tarea.pk %}">
+            {% csrf_token %}
+            <textarea name="contenido" class="coment-input" placeholder="Escribi un comentario..." rows="3"></textarea>
+            <div class="compose-bar">
+                <button type="submit" class="btn-enviar">Enviar</button>
+                <label for="inp-arch" class="btn-clip" title="Adjuntar archivo">📎</label>
+            </div>
+        </form>
+
+        <!-- Formulario de archivo (se muestra al seleccionar con 📎) -->
+        <form id="form-arch" method="post" action="{% url 'subir_archivo' tarea.pk %}"
+              enctype="multipart/form-data" class="file-compose" style="display:none;">
+            {% csrf_token %}
+            <input id="inp-arch" name="archivo" type="file" style="display:none">
+            <div class="file-bar">
+                <span style="font-size:16px;">📎</span>
+                <span id="file-nm" class="file-nm"></span>
+                <button type="button" class="btn-cancel" id="btn-arch-cancel">✕</button>
+                <button type="submit" class="btn-enviar">Subir</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Feed -->
+    <div class="chatter-feed">
+        {% for item in actividad %}
+
+        {% if item.tipo == 'comentario' %}
+        <div class="ch-item">
+            <div class="ch-avatar">{{ item.obj.autor.username|first|upper }}</div>
+            <div class="ch-body">
+                <div class="ch-header">
+                    <span class="ch-author">{{ item.obj.autor.username }}</span>
+                    <span class="ch-time">{{ item.ts|date:"d/m H:i" }}</span>
+                    {% if item.obj.autor == request.user %}
+                    <form method="post" action="{% url 'eliminar_comentario' item.obj.pk %}" style="margin:0; margin-left:auto;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-del-arch" title="Eliminar comentario">✕</button>
+                    </form>
+                    {% endif %}
+                </div>
+                <p class="ch-text">{{ item.obj.contenido }}</p>
+            </div>
+        </div>
+
+        {% elif item.tipo == 'archivo' %}
+        <div class="ch-item">
+            <div class="ch-avatar">{{ item.obj.subido_por.username|first|upper }}</div>
+            <div class="ch-body">
+                <div class="ch-header">
+                    <span class="ch-author">{{ item.obj.subido_por.username }}</span>
+                    <span class="ch-time">{{ item.ts|date:"d/m H:i" }}</span>
+                </div>
+                <div class="ch-file">
+                    <span>📎</span>
+                    <a href="{{ item.obj.archivo.url }}" target="_blank">{{ item.obj.nombre }}</a>
+                    <form method="post" action="{% url 'eliminar_archivo' item.obj.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-del-arch" title="Eliminar">✕</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="ch-log">
+            <span>{{ item.obj.evento }}</span>
+            <span class="ch-time">{{ item.ts|date:"d/m H:i" }}</span>
+        </div>
+        {% endif %}
+
+        {% empty %}
+        <div style="color:#9ca3af; font-size:13px;">Sin actividad aun.</div>
+        {% endfor %}
+    </div>
+</div><!-- /chatter -->
+
+</div><!-- /detalle-outer -->
+
+<script>
+/* Tabs */
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        var panel = document.getElementById(btn.dataset.target);
+        if (panel) panel.classList.add('active');
+    });
+});
+
+/* Adjuntar archivo via 📎 */
+var inp = document.getElementById('inp-arch');
+var formArch = document.getElementById('form-arch');
+var fileNm = document.getElementById('file-nm');
+var cancelBtn = document.getElementById('btn-arch-cancel');
+
+inp.addEventListener('change', function() {
+    if (inp.files.length > 0) {
+        fileNm.textContent = inp.files[0].name;
+        formArch.style.display = 'block';
+    }
+});
+cancelBtn.addEventListener('click', function() {
+    inp.value = '';
+    fileNm.textContent = '';
+    formArch.style.display = 'none';
+});
+
+/* Agregar fila en Parte de horas */
+var PREFIX = "{{ formset.prefix }}";
+document.getElementById('btn-add-hora').addEventListener('click', function() {
+    var total = document.getElementById('id_' + PREFIX + '-TOTAL_FORMS');
+    var idx = parseInt(total.value);
+    var tpl = document.getElementById('empty-hora-tpl').innerHTML
+        .replace(/__prefix__/g, String(idx));
+    document.getElementById('tbody-horas').insertAdjacentHTML('beforeend', tpl);
+    total.value = idx + 1;
+});
+</script>
+
 {% endblock %}
