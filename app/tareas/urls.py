@@ -19,7 +19,14 @@ urlpatterns = [
     path('proyectos/crear/', views.crear_proyecto, name='crear_proyecto'),
     path('tareas/crear/', views.crear_tarea, name='crear_tarea'),
     path('tareas/<int:pk>/eliminar/', views.eliminar_tarea, name='eliminar_tarea'),
+    path('tareas/eliminar-bulk/', views.eliminar_tareas_bulk, name='eliminar_tareas_bulk'),
+    path('proyectos/<int:pk>/renombrar/', views.renombrar_proyecto, name='renombrar_proyecto'),
     path('proyectos/<int:pk>/eliminar/', views.eliminar_proyecto, name='eliminar_proyecto'),
+    path('proyectos/eliminar-bulk/', views.eliminar_proyectos_bulk, name='eliminar_proyectos_bulk'),
     path('notificaciones/', views.notificaciones_json, name='notificaciones_json'),
     path('notificaciones/<int:pk>/leer/', views.marcar_notif_leida, name='marcar_notif_leida'),
-]
+    path('tareas/<int:pk>/comentar/', views.agregar_comentario, name='agregar_comentario'),
+    path('tareas/comentario/<int:pk_comentario>/eliminar/', views.eliminar_comentario, name='eliminar_comentario'),
+    path('tareas/<int:pk>/archivo/', views.subir_archivo, name='subir_archivo'),
+    path('tareas/archivo/<int:pk_archivo>/eliminar/', views.eliminar_archivo, name='eliminar_archivo'),
+]   

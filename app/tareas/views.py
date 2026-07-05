@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -16,7 +17,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 
 from .accesos import proyectos_de, tareas_de, puede_ver_tarea, puede_ver_proyecto
-from .models import Tarea, Proyecto, Notificacion, ESTADOS, CATEGORIAS, ETAPAS_PROYECTO
+from .models import Tarea, Proyecto, Notificacion, ComentarioTarea, ArchivoTarea, ESTADOS, CATEGORIAS, ETAPAS_PROYECTO
 from .forms import TareaForm, PartesHorasFormSet
 from .serializers import NotificacionSerializer, MoverTareaSerializer
 
@@ -70,8 +71,7 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    proyectos = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
-    return render(request, 'dashboard.html', {'proyectos': proyectos})
+    return redirect('kanban_proyectos')
 
 def _proyectos_filtrados(request):
     qs = proyectos_de(request.user).annotate(num_tareas=Count('tareas'))
@@ -170,24 +170,93 @@ def kanban_tareas(request):
         qs = qs.filter(fecha_limite__lte=filtros['fecha_hasta'])
     if filtros['proyecto']:
         qs = qs.filter(proyecto_id=filtros['proyecto'])
-    columnas = [{'codigo': codigo, 'label': label, 'tareas': []} for codigo, label in ESTADOS]
-    indice = {c['codigo']: c for c in columnas}
-    for t in qs:
-        if t.estado in indice:
-            indice[t.estado]['tareas'].append(t)
+    proyectos_disponibles = proyectos_de(request.user)
+    if filtros['proyecto']:
+        # Vista de un proyecto especifico: columnas por estado
+        columnas = [{'codigo': c, 'pk': None, 'label': l, 'tareas': []} for c, l in ESTADOS]
+        idx = {col['codigo']: col for col in columnas}
+        for t in qs:
+            if t.estado in idx:
+                idx[t.estado]['tareas'].append(t)
+        modo = 'estado'
+    else:
+        # Vista de todas las tareas: columnas por proyecto
+        # Se derivan de los proyectos que realmente tienen tareas del usuario
+        # (incluye proyectos donde solo es responsable de alguna tarea)
+        pids = qs.values_list('proyecto_id', flat=True).distinct()
+        proyectos_lista = Proyecto.objects.filter(pk__in=pids).order_by('nombre')
+        columnas = [{'pk': p.pk, 'codigo': '', 'label': p.nombre, 'tareas': []} for p in proyectos_lista]
+        idx = {col['pk']: col for col in columnas}
+        for t in qs:
+            if t.proyecto_id in idx:
+                idx[t.proyecto_id]['tareas'].append(t)
+        modo = 'proyecto'
+    proyecto_actual = None
     try:
-        proyecto_actual_id = int(filtros['proyecto']) if filtros['proyecto'] else None
+        if filtros['proyecto']:
+            proyecto_actual = Proyecto.objects.filter(pk=int(filtros['proyecto'])).first()
     except ValueError:
-        proyecto_actual_id = None
+        pass
     return render(request, 'tareas/kanban.html', {
         'columnas': columnas,
+        'modo': modo,
         'usuarios': User.objects.order_by('username'),
         'categorias': CATEGORIAS,
         'estados': ESTADOS,
         'filtros': filtros,
-        'proyectos_disponibles': proyectos_de(request.user),
-        'proyecto_actual_id': proyecto_actual_id,
+        'proyectos_disponibles': proyectos_disponibles,
+        'proyecto_actual': proyecto_actual,
+        'proyecto_actual_id': proyecto_actual.pk if proyecto_actual else None,
     })
+
+@login_required
+@require_POST
+def agregar_comentario(request, pk):
+    tarea = get_object_or_404(Tarea, pk=pk)
+    if not puede_ver_tarea(request.user, tarea):
+        return redirect('lista_tareas')
+    contenido = request.POST.get('contenido', '').strip()
+    if contenido:
+        ComentarioTarea.objects.create(tarea=tarea, autor=request.user, contenido=contenido)
+    return redirect('detalle_tarea', pk=pk)
+
+
+@login_required
+@require_POST
+def eliminar_comentario(request, pk_comentario):
+    comentario = get_object_or_404(ComentarioTarea, pk=pk_comentario)
+    tarea_pk = comentario.tarea_id
+    if comentario.autor == request.user:
+        comentario.delete()
+    return redirect('detalle_tarea', pk=tarea_pk)
+
+
+@login_required
+@require_POST
+def subir_archivo(request, pk):
+    tarea = get_object_or_404(Tarea, pk=pk)
+    if not puede_ver_tarea(request.user, tarea):
+        return redirect('lista_tareas')
+    archivo = request.FILES.get('archivo')
+    if archivo:
+        ArchivoTarea.objects.create(
+            tarea=tarea, subido_por=request.user,
+            archivo=archivo, nombre=archivo.name,
+        )
+    return redirect('detalle_tarea', pk=pk)
+
+
+@login_required
+@require_POST
+def eliminar_archivo(request, pk_archivo):
+    obj = get_object_or_404(ArchivoTarea, pk=pk_archivo)
+    if not puede_ver_tarea(request.user, obj.tarea):
+        return redirect('lista_tareas')
+    tarea_pk = obj.tarea_id
+    obj.archivo.delete()
+    obj.delete()
+    return redirect('detalle_tarea', pk=tarea_pk)
+
 
 @login_required
 def detalle_tarea(request, pk):
@@ -215,11 +284,20 @@ def detalle_tarea(request, pk):
         form = TareaForm(instance=tarea)
         formset = PartesHorasFormSet(instance=tarea)
 
+    actividad = []
+    for c in tarea.comentarios.select_related('autor').all():
+        actividad.append({'tipo': 'comentario', 'obj': c, 'ts': c.creado_en})
+    for a in tarea.archivos.select_related('subido_por').all():
+        actividad.append({'tipo': 'archivo', 'obj': a, 'ts': a.subido_en})
+    for h in tarea.historial.all():
+        actividad.append({'tipo': 'historial', 'obj': h, 'ts': h.creado_en})
+    actividad.sort(key=lambda x: x['ts'], reverse=True)
+
     return render(request, 'tareas/detalle.html', {
         'tarea': tarea,
         'form': form,
         'formset': formset,
-        'historial': tarea.historial.all()[:50],
+        'actividad': actividad,
     })
 
 @login_required
@@ -245,10 +323,13 @@ def mover_tarea(request):
     tarea = get_object_or_404(Tarea, pk=datos['tarea_id'])
     if not puede_ver_tarea(request.user, tarea):
         return Response({'ok': False, 'error': 'sin permiso'}, status=status.HTTP_403_FORBIDDEN)
-    if datos['estado'] not in ESTADOS_VALIDOS:
-        return Response({'ok': False, 'error': 'estado invalido'}, status=status.HTTP_400_BAD_REQUEST)
-    tarea.estado = datos['estado']
-    tarea.save(update_fields=['estado'])
+    if datos.get('proyecto_id'):
+        proyecto = get_object_or_404(proyectos_de(request.user), pk=datos['proyecto_id'])
+        tarea.proyecto = proyecto
+        tarea.save(update_fields=['proyecto'])
+    elif datos.get('estado') and datos['estado'] in ESTADOS_VALIDOS:
+        tarea.estado = datos['estado']
+        tarea.save(update_fields=['estado'])
     for posicion, tid in enumerate(datos['orden']):
         Tarea.objects.filter(pk=tid).update(posicion=posicion)
     return Response({'ok': True})
@@ -280,6 +361,8 @@ def crear_tarea(request):
         if form.is_valid():
             tarea = form.save()
             messages.success(request, f'Tarea "{tarea.titulo}" creada correctamente.')
+            if proyecto_fijo:
+                return redirect(reverse('kanban_tareas') + f'?proyecto={proyecto_fijo.pk}')
             return redirect('kanban_tareas')
     else:
         initial = {'estado': request.GET.get('estado', 'relevamiento')}
@@ -305,6 +388,41 @@ def eliminar_tarea(request, pk):
         messages.success(request, 'Tarea eliminada.')
         return redirect('kanban_tareas')
     return render(request, 'tareas/eliminar.html', {'tarea': tarea})
+
+@login_required
+@require_POST
+def eliminar_tareas_bulk(request):
+    ids = request.POST.getlist('ids')
+    eliminadas = tareas_de(request.user).filter(pk__in=ids)
+    count = eliminadas.count()
+    eliminadas.delete()
+    if count:
+        messages.success(request, f'{count} tarea(s) eliminada(s).')
+    return redirect('lista_tareas')
+
+
+@login_required
+@require_POST
+def eliminar_proyectos_bulk(request):
+    ids = request.POST.getlist('ids')
+    eliminados = Proyecto.objects.filter(pk__in=ids, propietario=request.user)
+    count = eliminados.count()
+    eliminados.delete()
+    if count:
+        messages.success(request, f'{count} proyecto(s) eliminado(s).')
+    return redirect('lista_proyectos')
+
+
+@login_required
+@require_POST
+def renombrar_proyecto(request, pk):
+    proyecto = get_object_or_404(Proyecto, pk=pk, propietario=request.user)
+    nombre = request.POST.get('nombre', '').strip()
+    if nombre:
+        proyecto.nombre = nombre
+        proyecto.save(update_fields=['nombre'])
+    return redirect('kanban_proyectos')
+
 
 @login_required
 def eliminar_proyecto(request, pk):
