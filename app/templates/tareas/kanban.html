@@ -4,63 +4,58 @@
 {% block estilos %}<style>
 .toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .tablero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: start; }
-.col { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; min-height: 200px; }
-.col-titulo { font-size: 13px; font-weight: 600; color: #374151; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; display:flex; justify-content:space-between; align-items: center; }
-.col-titulo .conteo { color: #111827; }
-.col-titulo .add-card { color: #374151; font-size: 18px; line-height: 1; text-decoration: none; padding: 0 6px; }
-.col-titulo .add-card:hover { color: #111827; }
-.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: grab; color: #111827; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.col { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; min-height: 200px; }
+.col-titulo { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.78); padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items: center; }
+.col-titulo .conteo { color: #fff; }
+.col-titulo .add-card { color: #fff; font-size: 18px; line-height: 1; text-decoration: none; padding: 0 6px; }
+.col-titulo .add-card:hover { opacity: 0.7; }
+.card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: grab; color: #fff; }
 .card .titulo { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-.card .titulo a { color: #111827; text-decoration: none; }
-.card .titulo a:hover { text-decoration: underline; }
-.card .meta { color: #6b7280; font-size: 11px; }
-.card .tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; margin-top: 4px; }
-.col-vacia { color: #9ca3af; font-size: 12px; text-align: center; padding: 16px 0; }
-
+.card .meta { color: rgba(255,255,255,0.55); font-size: 11px; }
+.card .tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.14); color: #fff; margin-top: 4px; }
+.col-vacia { color: rgba(255,255,255,0.30); font-size: 12px; text-align: center; padding: 16px 0; }
 /* Buscador estilo Odoo */
 .search-shell { position: relative; margin-bottom: 16px; }
 .search-bar {
     display: flex; align-items: center; gap: 8px;
-    background: #fff;
-    border: 1px solid #d1d5db;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 8px; padding: 6px 12px;
-    flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    flex-wrap: wrap;
 }
-.search-bar:focus-within { border-color: #6b7280; }
-.search-bar .ico { color: #9ca3af; font-size: 14px; }
-.search-bar input { flex: 1; min-width: 200px; background: transparent; border: 0; color: #111827; font-size: 14px; outline: none; padding: 4px 0; }
-.search-bar input::placeholder { color: #9ca3af; }
+.search-bar:focus-within { border-color: rgba(255,255,255,0.45); }
+.search-bar .ico { color: rgba(255,255,255,0.55); font-size: 14px; }
+.search-bar input { flex: 1; min-width: 200px; background: transparent; border: 0; color: #fff; font-size: 14px; outline: none; padding: 4px 0; }
 .search-bar .chip {
     display: inline-flex; align-items: center; gap: 6px;
-    background: #f3f4f6; color: #374151;
+    background: rgba(255,255,255,0.12); color: #fff;
     padding: 3px 10px; border-radius: 14px; font-size: 12px;
-    border: 1px solid #e5e7eb;
 }
-.search-bar .chip a { color: #6b7280; text-decoration: none; font-weight: bold; margin-left: 2px; }
-.search-bar .chip a:hover { color: #111827; }
+.search-bar .chip a { color: rgba(255,255,255,0.7); text-decoration: none; font-weight: bold; margin-left: 2px; }
+.search-bar .chip a:hover { color: #fff; }
 .search-dropdown {
     position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px;
-    background: #fff; border: 1px solid #e5e7eb;
+    background: #161616; border: 1px solid rgba(255,255,255,0.18);
     border-radius: 8px; padding: 6px 0; z-index: 50;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
 }
-.search-dropdown a { display: block; padding: 8px 14px; color: #374151; text-decoration: none; font-size: 13px; }
-.search-dropdown a:hover { background: #f9fafb; color: #111827; }
-.search-dropdown b { color: #111827; font-weight: 700; }
-.search-dropdown i { color: #6b7280; font-style: italic; }
+.search-dropdown a { display: block; padding: 8px 14px; color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
+.search-dropdown a:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.search-dropdown b { color: #fff; font-weight: 700; }
+.search-dropdown i { color: rgba(255,255,255,0.55); font-style: italic; }
 
-/* Filtros extra */
+/* Filtros extra ocultos en details */
 .mas-filtros { margin-bottom: 16px; }
-.mas-filtros summary { color: #6b7280; font-size: 13px; cursor: pointer; padding: 6px 0; }
-.mas-filtros summary:hover { color: #111827; }
-.filtros { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-top: 8px; display: grid; grid-template-columns: repeat(5, 1fr) auto; gap: 10px; align-items: end; }
-.filtros label { display: block; font-size: 11px; color: #6b7280; margin-bottom: 4px; }
-.filtros input, .filtros select { width: 100%; padding: 7px 9px; background: #fff; color: #111827; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
+.mas-filtros summary { color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; padding: 6px 0; }
+.mas-filtros summary:hover { color: #fff; }
+.filtros { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-top: 8px; display: grid; grid-template-columns: repeat(5, 1fr) auto; gap: 10px; align-items: end; }
+.filtros label { display: block; font-size: 11px; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
+.filtros input, .filtros select { width: 100%; padding: 7px 9px; background: #0d0d0d; color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; font-size: 13px; }
 .filtros .acciones { display: flex; gap: 6px; }
-.filtros button { padding: 8px 14px; background: #111827; color: #fff; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
-.filtros .limpiar { padding: 8px 12px; background: #fff; color: #374151; border: 1px solid #e5e7eb; border-radius: 6px; text-decoration: none; font-size: 13px; }
+.filtros button { padding: 8px 14px; background: #fff; color: #0d0d0d; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+.filtros .limpiar { padding: 8px 12px; background: rgba(255,255,255,0.07); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; text-decoration: none; font-size: 13px; }
 .card.arrastrando { opacity: 0.4; }
-.col.drop-target { background: #eff6ff; border-color: #374151; }
+.col.drop-target { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.40); }
 .zona { min-height: 30px; }
 </style>{% endblock %}
 
@@ -142,10 +137,11 @@
     const dd = document.getElementById('search-dropdown');
     function pintar(v) {
         const enc = encodeURIComponent(v);
-        dd.innerHTML =
-            '<a href="?q=' + enc + '">Buscar <b>Título</b> para: <i>' + v + '</i></a>' +
-            '<a href="?proyecto_q=' + enc + '">Buscar <b>Proyecto</b> para: <i>' + v + '</i></a>' +
-            '<a href="?responsable_q=' + enc + '">Buscar <b>Responsable</b> para: <i>' + v + '</i></a>';
+        dd.innerHTML = `
+            <a href="?q=${enc}">Buscar <b>Título</b> para: <i>${v}</i></a>
+            <a href="?proyecto_q=${enc}">Buscar <b>Proyecto</b> para: <i>${v}</i></a>
+            <a href="?responsable_q=${enc}">Buscar <b>Responsable</b> para: <i>${v}</i></a>
+        `;
         dd.style.display = 'block';
     }
     input.addEventListener('input', () => {
@@ -181,8 +177,8 @@
         </div>
         <div class="zona">
             {% for t in col.tareas %}
-            <div class="card" data-tarea="{{ t.pk }}" data-url="{% url 'detalle_tarea' t.pk %}" draggable="true">
-                <div class="titulo">{{ t.titulo }}</div>
+            <div class="card" data-tarea="{{ t.pk }}" draggable="true">
+                <div class="titulo"><a href="{% url 'detalle_tarea' t.pk %}" style="color:#fff; text-decoration:none;">{{ t.titulo }}</a></div>
                 <div class="meta">{{ t.proyecto.nombre }}{% if t.responsable %} · {{ t.responsable.username }}{% endif %}</div>
                 {% if t.fecha_limite %}<div class="meta">Vence: {{ t.fecha_limite|date:"d/m/Y" }}</div>{% endif %}
                 <span class="tag">{{ t.get_categoria_display }}</span>
@@ -198,23 +194,19 @@ const csrf = document.querySelector('#csrf input[name=csrfmiddlewaretoken]').val
 const moverUrl = "{% url 'mover_tarea' %}";
 
 document.querySelectorAll('.card').forEach(card => {
-    let dragged = false;
-
+    // Si la accion comienza sobre un link, no inicia el drag (deja navegar al detalle)
     card.addEventListener('dragstart', e => {
-        dragged = true;
+        if (e.target.tagName === 'A' || e.target.closest('a')) {
+            e.preventDefault();
+            return;
+        }
         e.dataTransfer.setData('text/plain', card.dataset.tarea);
         card.classList.add('arrastrando');
     });
-    card.addEventListener('dragend', () => {
-        card.classList.remove('arrastrando');
-        setTimeout(() => { dragged = false; }, 50);
-    });
-    // Click en cualquier parte de la card navega al detalle
-    card.addEventListener('click', () => {
-        if (!dragged) window.location.href = card.dataset.url;
-    });
+    card.addEventListener('dragend', () => card.classList.remove('arrastrando'));
 });
 
+// Si el tablero esta filtrado por un solo proyecto, abre el WS de ese tablero.
 const proyectoActualId = parseInt(document.getElementById('kanban-config').dataset.proyectoId, 10);
 if (proyectoActualId) {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
