@@ -32,6 +32,8 @@
             text-decoration: none;
         }
         .btn-logout:hover { background: #f9fafb; color: #111827; }
+        .user-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; }
+        .badge-admin { background: #111827; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.3px; }
 
         .container { padding: 32px; }
         .container h2 { font-size: 22px; margin-bottom: 20px; color: #111827; }
@@ -175,6 +177,12 @@
                     <p class="notif-vacio">Cargando...</p>
                 </div>
             </div>
+        </div>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <div class="user-info">
+            <span>{{ user.username }}</span>
+            {% if es_admin %}<span class="badge-admin">Admin</span>{% else %}<span class="badge-admin" style="background:#6b7280;">Usuario</span>{% endif %}
         </div>
         {% endif %}
         <a class="btn-logout" href="{% url 'logout' %}">Salir</a>

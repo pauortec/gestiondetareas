@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de roles{% endblock %}
+
+{% block estilos %}<style>
+.roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; }
+.roles-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+.roles-card-header { padding: 14px 18px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+.roles-card-header h3 { font-size: 14px; font-weight: 600; color: #111827; }
+.roles-card-header .count { background: #f3f4f6; color: #374151; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.roles-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 18px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827; }
+.roles-row:last-child { border-bottom: none; }
+.roles-vacio { padding: 20px 18px; font-size: 13px; color: #9ca3af; text-align: center; }
+.btn-rol { padding: 4px 12px; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-degradar { background: #fee2e2; color: #b91c1c; }
+.btn-degradar:hover { background: #fecaca; }
+.btn-promover { background: #dbeafe; color: #1d4ed8; }
+.btn-promover:hover { background: #bfdbfe; }
+.badge-yo { font-size: 10px; background: #f3f4f6; color: #6b7280; padding: 1px 6px; border-radius: 8px; margin-left: 6px; }
+</style>{% endblock %}
+
+{% block contenido %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <h2 style="margin:0;">Gestión de roles</h2>
+</div>
+
+<div class="roles-grid">
+    <div class="roles-card">
+        <div class="roles-card-header">
+            <h3>Administradores</h3>
+            <span class="count">{{ admins|length }}</span>
+        </div>
+        {% for u in admins %}
+        <div class="roles-row">
+            <span>
+                {{ u.username }}
+                {% if u == request.user %}<span class="badge-yo">vos</span>{% endif %}
+            </span>
+            {% if u != request.user %}
+            <form method="post" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="usuario_id" value="{{ u.pk }}">
+                <input type="hidden" name="accion" value="degradar">
+                <button type="submit" class="btn-rol btn-degradar">Quitar admin</button>
+            </form>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="roles-vacio">Sin administradores</div>
+        {% endfor %}
+    </div>
+
+    <div class="roles-card">
+        <div class="roles-card-header">
+            <h3>Usuarios</h3>
+            <span class="count">{{ usuarios|length }}</span>
+        </div>
+        {% for u in usuarios %}
+        <div class="roles-row">
+            <span>{{ u.username }}</span>
+            <form method="post" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="usuario_id" value="{{ u.pk }}">
+                <input type="hidden" name="accion" value="promover">
+                <button type="submit" class="btn-rol btn-promover">Hacer admin</button>
+            </form>
+        </div>
+        {% empty %}
+        <div class="roles-vacio">Sin usuarios regulares</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
