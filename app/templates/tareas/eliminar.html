@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Eliminar tarea{% endblock %}
+
+{% block contenido %}
+<div style="max-width:480px; margin:40px auto; background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:32px;">
+    <h2 style="font-size:20px; margin-bottom:12px; color:#111827;">¿Eliminar tarea?</h2>
+    <p style="color:#6b7280; font-size:14px; margin-bottom:24px;">
+        Estás por eliminar <strong style="color:#111827;">{{ tarea.titulo }}</strong>. Esta acción no se puede deshacer.
+    </p>
+    <form method="post" style="display:flex; gap:12px;">
+        {% csrf_token %}
+        <button type="submit" style="padding:10px 24px; background:#ef4444; border:none; border-radius:8px; color:#fff; font-size:14px; font-weight:600; cursor:pointer;">Eliminar</button>
+        <a href="{% url 'detalle_tarea' tarea.pk %}" style="padding:10px 20px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:8px; color:#374151; font-size:14px; text-decoration:none;">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

@@ -19,7 +19,7 @@ from .models import Proyecto, Tarea
 # Distinct evita duplicados cuando el M2M de colaboradores hace join.
 def proyectos_de(usuario):
     return Proyecto.objects.filter(
-        Q(propietario=usuario) | Q(colaboradores=usuario)
+        Q(propietario=usuario) | Q(colaboradores=usuario) | Q(tareas__responsable=usuario)
     ).distinct()
 
 
