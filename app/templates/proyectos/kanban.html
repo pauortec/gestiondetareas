@@ -36,27 +36,71 @@
 .search-dropdown i { color: #6b7280; font-style: italic; }
 
 /* Tablero de columnas por etapa */
-.tablero-wrapper { overflow-x: auto; }
-.tablero { display: flex; gap: 14px; align-items: flex-start; min-width: max-content; padding-bottom: 12px; }
+.tablero-wrapper { overflow-x: auto; display: flex; justify-content: center; }
+.tablero { display: inline-flex; gap: 14px; align-items: flex-start; padding-bottom: 12px; }
 .col { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; width: 230px; min-height: 160px; flex-shrink: 0; }
 .col-titulo { font-size: 13px; font-weight: 600; color: #374151; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
 .col-titulo .conteo { background: #e5e7eb; color: #374151; border-radius: 10px; padding: 1px 7px; font-size: 11px; }
 .col-vacia { color: #9ca3af; font-size: 12px; text-align: center; padding: 16px 0; }
 
 /* Cards de proyecto */
+.proj-card-wrap {
+    position: relative;
+    background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 8px; margin-bottom: 8px;
+}
 .proj-card {
     display: block; text-decoration: none;
-    background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 8px; padding: 12px;
-    margin-bottom: 8px; color: #111827;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    transition: box-shadow 0.15s, transform 0.15s;
+    padding: 12px; color: #111827;
+    transition: background 0.15s;
+    border-radius: 8px;
 }
-.proj-card:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.08); transform: translateY(-1px); color: #111827; }
+.proj-card:hover { background: #f9fafb; color: #111827; }
 .proj-card .nombre { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
 .proj-card .meta { font-size: 11px; color: #6b7280; }
 .proj-card .num { font-size: 18px; font-weight: 700; color: #111827; margin-top: 8px; }
 .proj-card .num span { font-size: 11px; color: #6b7280; font-weight: 400; }
+
+/* boton tres puntos */
+.btn-dots {
+    position: absolute; top: 8px; right: 8px;
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; color: #6b7280; padding: 2px 6px;
+    border-radius: 4px; line-height: 1;
+}
+.btn-dots:hover { background: #e5e7eb; color: #111827; }
+
+/* dropdown */
+.card-dropdown {
+    position: absolute; top: 32px; right: 8px;
+    background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    z-index: 50; min-width: 160px; padding: 4px 0;
+}
+.dd-item {
+    display: block; width: 100%; text-align: left;
+    padding: 8px 14px; background: none; border: none;
+    cursor: pointer; font-size: 13px; color: #374151;
+}
+.dd-item:hover { background: #f9fafb; color: #111827; }
+
+/* formulario renombrar inline */
+.rename-form { padding: 10px 12px; }
+.rename-input {
+    width: 100%; padding: 6px 8px; border: 1px solid #6b7280;
+    border-radius: 6px; font-size: 13px; font-family: inherit;
+    color: #111827; background: #fff; box-sizing: border-box;
+}
+.rename-input:focus { outline: none; }
+.rename-actions { display: flex; gap: 6px; margin-top: 6px; justify-content: flex-end; }
+.btn-rename-ok {
+    padding: 4px 12px; background: #111827; color: #fff;
+    border: none; border-radius: 5px; cursor: pointer; font-size: 13px;
+}
+.btn-rename-cancel {
+    padding: 4px 10px; background: none; color: #6b7280;
+    border: 1px solid #e5e7eb; border-radius: 5px; cursor: pointer; font-size: 13px;
+}
 </style>{% endblock %}
 
 {% block contenido %}
@@ -121,11 +165,29 @@
                 <span class="conteo">{{ col.proyectos|length }}</span>
             </div>
             {% for p in col.proyectos %}
-            <a href="{% url 'kanban_tareas' %}?proyecto={{ p.pk }}" class="proj-card">
-                <div class="nombre">{{ p.nombre }}</div>
-                <div class="meta">{{ p.propietario.username }}</div>
-                <div class="num">{{ p.num_tareas }} <span>tarea{{ p.num_tareas|pluralize }}</span></div>
-            </a>
+            <div class="proj-card-wrap">
+                <a href="{% url 'kanban_tareas' %}?proyecto={{ p.pk }}" class="proj-card">
+                    <div class="nombre">{{ p.nombre }}</div>
+                    <div class="meta">{{ p.propietario.username }}</div>
+                    <div class="num">{{ p.num_tareas }} <span>tarea{{ p.num_tareas|pluralize }}</span></div>
+                </a>
+                {% if p.propietario == request.user %}
+                <button type="button" class="btn-dots" data-pk="{{ p.pk }}">⋯</button>
+                <div class="card-dropdown" id="dd-{{ p.pk }}" style="display:none;">
+                    <button type="button" class="dd-item" data-action="rename" data-pk="{{ p.pk }}">Cambiar nombre</button>
+                </div>
+                <form class="rename-form" id="rename-{{ p.pk }}" method="post"
+                      action="{% url 'renombrar_proyecto' p.pk %}" style="display:none;">
+                    {% csrf_token %}
+                    <input type="text" name="nombre" value="{{ p.nombre }}"
+                           class="rename-input" autocomplete="off">
+                    <div class="rename-actions">
+                        <button type="submit" class="btn-rename-ok">Guardar</button>
+                        <button type="button" class="btn-rename-cancel" data-pk="{{ p.pk }}">Cancelar</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
             {% empty %}
             <div class="col-vacia">Sin proyectos</div>
             {% endfor %}
@@ -133,4 +195,54 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+(function() {
+    function cerrarDropdowns() {
+        document.querySelectorAll('.card-dropdown').forEach(d => d.style.display = 'none');
+    }
+
+    // Abrir/cerrar dropdown al click en "⋯"
+    document.addEventListener('click', function(e) {
+        const dots = e.target.closest('.btn-dots');
+        if (dots) {
+            e.preventDefault();
+            const pk = dots.dataset.pk;
+            const dd = document.getElementById('dd-' + pk);
+            const abierto = dd.style.display === 'block';
+            cerrarDropdowns();
+            if (!abierto) dd.style.display = 'block';
+            return;
+        }
+
+        // Click en "Cambiar nombre"
+        const item = e.target.closest('[data-action="rename"]');
+        if (item) {
+            const pk = item.dataset.pk;
+            cerrarDropdowns();
+            const wrap = item.closest('.proj-card-wrap');
+            wrap.querySelector('.proj-card').style.display = 'none';
+            wrap.querySelector('.btn-dots').style.display = 'none';
+            const form = document.getElementById('rename-' + pk);
+            form.style.display = 'block';
+            form.querySelector('.rename-input').select();
+            return;
+        }
+
+        // Cancelar renombrar
+        const cancel = e.target.closest('.btn-rename-cancel');
+        if (cancel) {
+            const pk = cancel.dataset.pk;
+            const wrap = cancel.closest('.proj-card-wrap');
+            document.getElementById('rename-' + pk).style.display = 'none';
+            wrap.querySelector('.proj-card').style.display = 'block';
+            wrap.querySelector('.btn-dots').style.display = '';
+            return;
+        }
+
+        // Click fuera cierra dropdowns
+        if (!e.target.closest('.card-dropdown')) cerrarDropdowns();
+    });
+})();
+</script>
 {% endblock %}
