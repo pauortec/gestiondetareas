@@ -4,7 +4,7 @@
 {% block estilos %}<style>
 .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
-/* Buscador centrado estilo Odoo */
+/* Buscador */
 .search-shell { max-width: 680px; margin: 0 auto 12px; position: relative; }
 .search-bar {
     display: flex; align-items: center; gap: 8px;
@@ -35,7 +35,7 @@
 .search-dropdown b { color: #111827; font-weight: 700; }
 .search-dropdown i { color: #6b7280; font-style: italic; }
 
-/* Filtros de etapa debajo del buscador */
+/* Pills etapa */
 .etapa-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; justify-content: center; }
 .etapa-pill {
     padding: 4px 14px; border-radius: 16px; font-size: 12px; font-weight: 500;
@@ -45,7 +45,7 @@
 .etapa-pill:hover { background: #f3f4f6; color: #111827; }
 .etapa-pill.active { background: #374151; color: #fff; border-color: #374151; }
 
-/* Etapa badges de colores */
+/* Etapa badges */
 .tag-etapa { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
 .tag-etapa.implementacion { background: #dbeafe; color: #1d4ed8; }
 .tag-etapa.produccion     { background: #dcfce7; color: #15803d; }
@@ -53,9 +53,43 @@
 .tag-etapa.sin_soporte    { background: #f3f4f6; color: #374151; }
 .tag-etapa.interno        { background: #f3e8ff; color: #7e22ce; }
 .tag-etapa.cancelado      { background: #fee2e2; color: #b91c1c; }
+
+/* === Barra de accion flotante === */
+.action-bar {
+    display: none; position: fixed; top: 68px; left: 50%;
+    transform: translateX(-50%);
+    background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 8px 16px; align-items: center; gap: 12px;
+    z-index: 200; white-space: nowrap;
+}
+.action-bar.visible { display: flex; }
+.action-bar .sel-label { font-size: 14px; font-weight: 600; color: #111827; }
+.action-bar .btn-desel {
+    background: none; border: none; cursor: pointer;
+    color: #9ca3af; font-size: 18px; line-height: 1; padding: 0 2px;
+}
+.action-bar .btn-desel:hover { color: #111827; }
+.action-bar .btn-bulk-del {
+    padding: 7px 16px; background: #dc2626; border: none;
+    border-radius: 6px; color: #fff; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+}
+.action-bar .btn-bulk-del:hover { background: #b91c1c; }
+
+th.check-col, td.check-col { width: 36px; padding-right: 0; }
+input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: #111827; }
+tr:has(.row-check:checked) td { background: #eff6ff; }
 </style>{% endblock %}
 
 {% block contenido %}
+
+<div class="action-bar" id="action-bar">
+    <span class="sel-label"><span id="sel-num">0</span> seleccionado(s)</span>
+    <button type="button" class="btn-desel" id="btn-desel" title="Deseleccionar">×</button>
+    <button type="submit" form="bulk-form" class="btn-bulk-del">🗑 Eliminar</button>
+</div>
+
 <div class="toolbar">
     <h2 style="margin:0;">Proyectos</h2>
     <a href="{% url 'crear_proyecto' %}" class="btn-primario">+ Nuevo proyecto</a>
@@ -70,7 +104,6 @@
     </a>
 </div>
 
-{# Buscador centrado estilo Odoo #}
 <div class="search-shell">
     <div class="search-bar">
         <span class="ico">🔍</span>
@@ -80,13 +113,85 @@
     <div class="search-dropdown" id="search-dd-proj" style="display:none;"></div>
 </div>
 
-{# Filtros de etapa como pills debajo del buscador #}
 <div class="etapa-pills">
     <a href="?{% if filtros.q %}q={{ filtros.q }}{% endif %}" class="etapa-pill {% if not filtros.etapa %}active{% endif %}">Todas</a>
     {% for codigo, label in etapas %}
     <a href="?{% if filtros.q %}q={{ filtros.q }}&{% endif %}etapa={{ codigo }}" class="etapa-pill {% if filtros.etapa == codigo %}active{% endif %}">{{ label }}</a>
     {% endfor %}
 </div>
+
+<form id="bulk-form" method="post" action="{% url 'eliminar_proyectos_bulk' %}">
+{% csrf_token %}
+<table>
+    <thead>
+        <tr>
+            <th class="check-col"><input type="checkbox" id="sel-all" title="Seleccionar todo"></th>
+            <th>Nombre</th>
+            <th>Etapa</th>
+            <th>Propietario</th>
+            <th>Tareas</th>
+            <th>Creado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in proyectos %}
+        <tr>
+            <td class="check-col"><input type="checkbox" name="ids" value="{{ p.pk }}" class="row-check"></td>
+            <td><a href="{% url 'kanban_tareas' %}?proyecto={{ p.pk }}" style="font-weight:600;">{{ p.nombre }}</a></td>
+            <td><span class="tag-etapa {{ p.etapa }}">{{ p.get_etapa_display }}</span></td>
+            <td>{{ p.propietario.username }}</td>
+            <td>{{ p.num_tareas }}</td>
+            <td>{{ p.creado_en|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="vacio">No hay proyectos que coincidan con los filtros.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</form>
+
+<script>
+(function() {
+    const selAll = document.getElementById('sel-all');
+    const bar    = document.getElementById('action-bar');
+    const selNum = document.getElementById('sel-num');
+    const desel  = document.getElementById('btn-desel');
+    const checks = () => document.querySelectorAll('.row-check');
+
+    function sync() {
+        const all     = checks();
+        const marcados = [...all].filter(c => c.checked);
+        selNum.textContent = marcados.length;
+        bar.classList.toggle('visible', marcados.length > 0);
+        selAll.checked     = marcados.length === all.length && all.length > 0;
+        selAll.indeterminate = marcados.length > 0 && marcados.length < all.length;
+    }
+
+    selAll.addEventListener('change', () => {
+        checks().forEach(c => c.checked = selAll.checked);
+        sync();
+    });
+
+    document.addEventListener('change', e => {
+        if (e.target.classList.contains('row-check')) sync();
+    });
+
+    desel.addEventListener('click', () => {
+        checks().forEach(c => c.checked = false);
+        selAll.checked = false;
+        selAll.indeterminate = false;
+        sync();
+    });
+
+    document.getElementById('bulk-form').addEventListener('submit', e => {
+        const marcados = [...checks()].filter(c => c.checked);
+        if (!marcados.length) { e.preventDefault(); return; }
+        if (!confirm(`Eliminar ${marcados.length} proyecto(s) y todas sus tareas? Esta accion no se puede deshacer.`)) {
+            e.preventDefault();
+        }
+    });
+})();
+</script>
 
 <script>
 (function() {
@@ -117,29 +222,4 @@
     });
 })();
 </script>
-
-<table>
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Etapa</th>
-            <th>Propietario</th>
-            <th>Tareas</th>
-            <th>Creado</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for p in proyectos %}
-        <tr>
-            <td><a href="{% url 'kanban_tareas' %}?proyecto={{ p.pk }}" style="font-weight:600;">{{ p.nombre }}</a></td>
-            <td><span class="tag-etapa {{ p.etapa }}">{{ p.get_etapa_display }}</span></td>
-            <td>{{ p.propietario.username }}</td>
-            <td>{{ p.num_tareas }}</td>
-            <td>{{ p.creado_en|date:"d/m/Y" }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" class="vacio">No hay proyectos que coincidan con los filtros.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}
