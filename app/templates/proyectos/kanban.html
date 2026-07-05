@@ -105,8 +105,13 @@
 
 {% block contenido %}
 <div class="toolbar">
-    <h2 style="margin:0;">Proyectos</h2>
-    <a href="{% url 'crear_proyecto' %}" class="btn-primario">+ Nuevo proyecto</a>
+    <div>
+        <h2 style="margin:0;">Proyectos</h2>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+        {% if es_admin %}<a href="{% url 'admin_roles' %}" class="btn-secundario">Roles</a>{% endif %}
+        {% if es_admin %}<a href="{% url 'crear_proyecto' %}" class="btn-primario">+ Nuevo proyecto</a>{% endif %}
+    </div>
 </div>
 
 <div class="view-toggle">
