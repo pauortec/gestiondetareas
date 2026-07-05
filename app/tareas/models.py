@@ -169,6 +169,33 @@ class HistorialTarea(models.Model):
         return f"{self.tarea}: {self.evento}"
 
 
+class ComentarioTarea(models.Model):
+    tarea = models.ForeignKey('Tarea', on_delete=models.CASCADE, related_name='comentarios')
+    autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='comentarios')
+    contenido = models.TextField()
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['creado_en']
+
+    def __str__(self):
+        return f"Comentario de {self.autor} en {self.tarea}"
+
+
+class ArchivoTarea(models.Model):
+    tarea = models.ForeignKey('Tarea', on_delete=models.CASCADE, related_name='archivos')
+    subido_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='archivos')
+    archivo = models.FileField(upload_to='tareas/%Y/%m/')
+    nombre = models.CharField(max_length=200)
+    subido_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-subido_en']
+
+    def __str__(self):
+        return self.nombre
+
+
 class Notificacion(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notificaciones')
     # Tarea que origino la notificacion; null si fue eliminada
