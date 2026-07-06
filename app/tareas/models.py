@@ -120,25 +120,35 @@ def _broadcast_tablero(tarea, accion):
 # Empuja la notificacion al canal personal del usuario asignado
 def _broadcast_notificacion(notif):
     try:
-        from asgiref.sync import async_to_sync
         from channels.layers import get_channel_layer
     except ImportError:
         return
     layer = get_channel_layer()
     if not layer:
         return
-    try:
-        async_to_sync(layer.group_send)(f'notif_{notif.usuario_id}', {
-            'type': 'evento_notif',
-            'data': {
-                'pk': notif.pk,
-                'mensaje': notif.mensaje,
-                'tarea_pk': notif.tarea_id,
-                'hora': notif.creada_en.strftime('%d/%m %H:%M'),
-            },
-        })
-    except Exception:
-        pass
+    import asyncio
+    import threading
+    grupo = f'notif_{notif.usuario_id}'
+    mensaje = {
+        'type': 'evento_notif',
+        'data': {
+            'pk': notif.pk,
+            'mensaje': notif.mensaje,
+            'tarea_pk': notif.tarea_id,
+            'hora': notif.creada_en.strftime('%d/%m %H:%M'),
+        },
+    }
+
+    def _enviar():
+        loop = asyncio.new_event_loop()
+        try:
+            loop.run_until_complete(layer.group_send(grupo, mensaje))
+        except Exception as e:
+            print(f'[broadcast_notif] error: {e}')
+        finally:
+            loop.close()
+
+    threading.Thread(target=_enviar, daemon=True).start()
 
 
 class ParteHoras(models.Model):

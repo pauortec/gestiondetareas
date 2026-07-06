@@ -335,21 +335,24 @@
         setTimeout(() => popup.remove(), 350);
     }
 
-    // WebSocket: escucha notificaciones en tiempo real
+    // WebSocket: escucha notificaciones en tiempo real, reconecta si cae
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${proto}://${location.host}/ws/notificaciones/`);
-    ws.onmessage = function (e) {
-        const msg = JSON.parse(e.data);
-        mostrarPopup(msg);
-        // Registrar el PK en sessionStorage para que el polling no lo duplique
-        if (msg.pk) {
-            pksCargados.add(msg.pk);
-            sessionStorage.setItem(GT_PKS, JSON.stringify([...pksCargados]));
-        }
-        const badge = document.getElementById('notifBadge');
-        const actual = badge && badge.style.display !== 'none' ? parseInt(badge.textContent) || 0 : 0;
-        actualizarBadge(actual + 1);
-    };
+    function conectarWS() {
+        const ws = new WebSocket(`${proto}://${location.host}/ws/notificaciones/`);
+        ws.onmessage = function (e) {
+            const msg = JSON.parse(e.data);
+            mostrarPopup(msg);
+            if (msg.pk) {
+                pksCargados.add(msg.pk);
+                sessionStorage.setItem(GT_PKS, JSON.stringify([...pksCargados]));
+            }
+            const badge = document.getElementById('notifBadge');
+            const actual = badge && badge.style.display !== 'none' ? parseInt(badge.textContent) || 0 : 0;
+            actualizarBadge(actual + 1);
+        };
+        ws.onclose = function () { setTimeout(conectarWS, 3000); };
+    }
+    conectarWS();
     </script>
     {% endif %}
 </body>
